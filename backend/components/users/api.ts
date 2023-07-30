@@ -18,20 +18,24 @@ router.get(
 );
 
 router.get("/auth/google/success", (_, res) =>
-  res.redirect(`${process.env.WEBSITE_URL}`)
+  res.redirect(`${process.env.WEBSITE_URL}/dashboard`)
 );
 
 router.get("/auth/google/failure", (req, res) => res.end("you failed"));
 
 router.post("/user", async (req, res) => {
-  console.log("in here");
   const user = await domain.createUser(req.body);
   res.json(user);
 });
 
+router.post("/logout", function (req, res) {
+  return req.logout(() => {
+    return res.json({});
+  });
+});
 router.get("/user", async (req, res, next) => {
   if (req.user) {
-    res.json(req.user);
+    res.json((req.user as any)?.dataValues);
   } else {
     next();
   }

@@ -4,14 +4,21 @@ import { Button } from "@mui/material";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import GoogleIcon from "@mui/icons-material/Google"; // import the Google icon
+import { useRouter } from "next/navigation";
+import { useGetUser } from "../../../helpers/api";
+import { useAuth } from "../../../helpers/hooks";
+import colors from "../../../helpers/colors";
+import Loader from "../../../components/Loader";
 
 const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  color: #48af74;
+  background-color: ${colors.green.tone0};
 `;
+
 const Panel = styled.div`
   background: white;
   flex: 1;
@@ -30,50 +37,53 @@ const LoginPanel = styled.div`
   align-items: center;
   height: 100vh;
   flex-direction: column;
-  background: #2f8658;
-  color: #ede2e8;
+  background-color: ${colors.green.tone0};
+  color: ${colors.pink.tone3};
   justify-content: flex-start;
+  padding-top: 100px;
+  gap: 40px;
   & > img {
     padding: 40px;
   }
 `;
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("An error occurred while fetching the data.");
+const LoginButton = styled(Button)`
+  background-color: transparent;
+  color: ede2e8;
+  padding: 10px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid white;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
   }
-  return res.json();
-};
+`;
+
+const Title = styled.h1`
+  color: white;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+`;
+
+const Description = styled.p`
+  color: white;
+  font-size: 1.2rem;
+  text-align: center;
+  max-width: 300px;
+`;
 
 const Login = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const { data, error } = useSWR(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user`,
-    fetcher
-  );
-  const user = data?.user;
+  const { isLoading } = useAuth();
 
   const handleLogin = () => {
-    debugger; // eslint-disable-line
     window.location.replace(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`
     );
   };
 
-  // If the user is already logged in, redirect to the home page
-  useEffect(() => {
-    if (user) {
-      window.location.replace("/");
-    }
-    setIsLoading(false);
-  }, [user]);
-
-  // if (error) {
-  //   console.error(error);
-  //   return <div>Failed to load user</div>;
-  // }
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loader />;
 
   return (
     <Container>
@@ -95,9 +105,17 @@ const Login = () => {
             height={120}
             priority
           />
-          <Button variant="contained" color="primary" onClick={handleLogin}>
+          <Description>
+            Your journey starts here. Discover new paths with us.
+          </Description>
+
+          <LoginButton
+            variant="contained"
+            startIcon={<GoogleIcon />}
+            onClick={handleLogin}
+          >
             Login with Google
-          </Button>
+          </LoginButton>
         </LoginPanel>
       </Panel>
     </Container>

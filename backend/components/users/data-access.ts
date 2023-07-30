@@ -7,7 +7,6 @@ export const createUser = async (userData: usersAttributes): Promise<users> => {
 export const getUserByProviderId = async (
   provider_id: string
 ): Promise<users | null> => {
-  console.trace("provider_id", provider_id);
   return await users.findOne({ where: { provider_id } });
 };
 

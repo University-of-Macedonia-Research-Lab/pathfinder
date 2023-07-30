@@ -12,12 +12,18 @@ import { PassportUser } from "../custom";
 
 export const authMiddleware = (app: Express) => {
   app.use(
-    session({ secret: "secret-key", resave: true, saveUninitialized: true })
+    session({
+      secret: "keyboard cat",
+      resave: false,
+      saveUninitialized: true,
+      // cookie: { secure: true },
+    })
   );
   app.use(passport.initialize());
   app.use(passport.session());
 
   passport.serializeUser((user: PassportUser, done) => {
+    console.log("usersssss", user);
     if (user.id != null) {
       // check if id is not null and not undefined
       done(null, user.id);
@@ -44,7 +50,6 @@ export const authMiddleware = (app: Express) => {
         callbackURL: `${process.env.API_URL}/auth/google/callback`,
       },
       async function (accessToken, refreshToken, profile, cb) {
-        console.log("profilesss", profile);
         let user = await getUserByProviderId(profile.id);
         if (!user) {
           user = await createUser({
