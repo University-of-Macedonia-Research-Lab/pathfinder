@@ -1,5 +1,4 @@
 {
-  "include": ["components/**/*.ts", "libraries/**/*.ts", "app.ts"],
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,

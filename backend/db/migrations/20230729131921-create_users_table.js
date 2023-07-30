@@ -17,25 +17,27 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING(128),
       },
-      providerId: {
+      provider_id: {
         allowNull: false,
         type: Sequelize.STRING(128),
       },
-      displayName: {
+      display_name: {
         allowNull: false,
         type: Sequelize.STRING(128),
       },
-      imageUrl: {
+      image_url: {
         allowNull: true,
         type: Sequelize.STRING(1024),
       },
-      createdAt: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
-      updatedAt: {
+      updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },
