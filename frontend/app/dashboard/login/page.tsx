@@ -48,7 +48,10 @@ const fetcher = async (url: string) => {
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { data, error } = useSWR("/api/user", fetcher);
+  const { data, error } = useSWR(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user`,
+    fetcher
+  );
   const user = data?.user;
 
   const handleLogin = () => {
