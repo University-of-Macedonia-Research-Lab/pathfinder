@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from "express";
 export const notFoundHandler = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   res.status(404).send({
     error: "Not Found",
@@ -13,12 +13,7 @@ export const notFoundHandler = (
 };
 
 // Error Handler
-export const errorHandler = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorHandler = (err: any, _: Request, res: Response) => {
   const statusCode = err.statusCode || 500;
   console.error(err.message, err.stack);
 

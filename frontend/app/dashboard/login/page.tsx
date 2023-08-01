@@ -2,11 +2,7 @@
 import styled from "@emotion/styled";
 import { Button } from "@mui/material";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import useSWR from "swr";
-import GoogleIcon from "@mui/icons-material/Google"; // import the Google icon
-import { useRouter } from "next/navigation";
-import { useGetUser } from "../../../helpers/api";
+import GoogleIcon from "@mui/icons-material/Google";
 import { useAuth } from "../../../helpers/hooks";
 import colors from "../../../helpers/colors";
 import Loader from "../../../components/Loader";
@@ -55,16 +51,9 @@ const LoginButton = styled(Button)`
   justify-content: center;
   align-items: center;
   border: 1px solid white;
-
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-`;
-
-const Title = styled.h1`
-  color: white;
-  font-size: 2.5rem;
-  margin-bottom: 10px;
 `;
 
 const Description = styled.p`
@@ -75,7 +64,7 @@ const Description = styled.p`
 `;
 
 const Login = () => {
-  const { isLoading } = useAuth();
+  const { isLoading } = useAuth(false);
 
   const handleLogin = () => {
     window.location.replace(

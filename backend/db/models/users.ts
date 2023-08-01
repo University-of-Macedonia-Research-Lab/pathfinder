@@ -3,7 +3,7 @@ import {
 } from "sequelize-typescript";
 
 export interface usersAttributes {
-    id?: number;
+    id?: string;
     email?: string;
     provider?: string;
     provider_id?: string;
@@ -21,12 +21,11 @@ export interface usersAttributes {
 export class users extends Model<usersAttributes, usersAttributes> implements usersAttributes {
 
     @Column({
-    	primaryKey: true,
-    	autoIncrement: true,
-    	type: DataType.INTEGER,
-    	defaultValue: Sequelize.literal("nextval('users_id_seq'::regclass)") 
-    })
-    	id?: number;
+  primaryKey: true,
+  type: DataType.UUID,
+  defaultValue: DataType.UUIDV4,
+})
+id!: string;
 
     @Column({
     	allowNull: true,

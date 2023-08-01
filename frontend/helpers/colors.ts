@@ -15,4 +15,9 @@ export default {
     tone2: "#F5F5F5",
     tone3: "#FFFFFF",
   },
+  black: {
+    tone1: "#333333",
+    tone2: "#4F4F4F",
+    tone3: "#828282",
+  },
 };

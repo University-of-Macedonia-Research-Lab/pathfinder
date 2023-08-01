@@ -1,6 +1,7 @@
 const path = require("path");
 const dotenv = require("dotenv");
 const { spawn } = require("child_process");
+const fs = require("fs"); // You need to import 'fs' for checking if patch.js file exists
 
 // Load environment variables from .env file
 const envPath = path.resolve(__dirname, "../.env");
@@ -47,7 +48,37 @@ childProcess.on("close", (code) => {
     console.log(
       "sequelize-typescript-generator command completed successfully."
     );
-    process.exit(0);
+
+    // Path to your patch file
+    const patchFilePath = path.resolve(__dirname, "./patch.js");
+
+    // Check if patch file exists
+    if (fs.existsSync(patchFilePath)) {
+      // Spawn a new child process to run the patch.js file
+      const patchProcess = spawn("node", [patchFilePath], {
+        stdio: "inherit",
+        shell: true,
+        env: process.env,
+      });
+
+      patchProcess.on("error", (error) => {
+        console.error("Error occurred during patch execution:", error.message);
+        process.exit(1);
+      });
+
+      patchProcess.on("close", (code) => {
+        if (code === 0) {
+          console.log("Patch script executed successfully.");
+          process.exit(0);
+        } else {
+          console.error(`Patch script exited with code ${code}.`);
+          process.exit(1);
+        }
+      });
+    } else {
+      console.error(`Patch file does not exist at ${patchFilePath}.`);
+      process.exit(1);
+    }
   } else {
     console.error(
       `sequelize-typescript-generator command exited with code ${code}.`

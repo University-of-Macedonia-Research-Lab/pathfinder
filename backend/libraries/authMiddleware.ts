@@ -9,6 +9,7 @@ import {
   getUserByProviderId,
 } from "../components/users/domain";
 import { PassportUser } from "../custom";
+import { UUIDV4 } from "sequelize";
 
 export const authMiddleware = (app: Express) => {
   app.use(
@@ -17,7 +18,7 @@ export const authMiddleware = (app: Express) => {
       resave: false,
       saveUninitialized: true,
       // cookie: { secure: true },
-    })
+    }),
   );
   app.use(passport.initialize());
   app.use(passport.session());
@@ -62,7 +63,7 @@ export const authMiddleware = (app: Express) => {
         }
 
         return cb(null, user);
-      }
-    )
+      },
+    ),
   );
 };
