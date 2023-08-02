@@ -11,6 +11,8 @@ import { errorHandler, notFoundHandler } from "./libraries/errorHandlers";
 import { authMiddleware } from "./libraries/authMiddleware";
 import { dbMiddleware } from "./libraries/db";
 import userRouter from "./components/users/api";
+import organisationRouter from "./components/organisations/api";
+
 import cors from "cors";
 // Load the .env file synchronously for local development
 if (process.env.NODE_ENV !== "production") dotenv.config();
@@ -25,7 +27,7 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  }),
+  })
 );
 app.set("trust proxy", 1); // trust first proxy
 
@@ -38,6 +40,8 @@ authMiddleware(app);
 app.use(dbMiddleware);
 
 app.use(userRouter);
+app.use(organisationRouter);
+
 // Error handlers - these should come last
 app.use(notFoundHandler);
 app.use(errorHandler);

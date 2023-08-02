@@ -24,7 +24,7 @@ import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
 import ImageAspectRatioIcon from "@mui/icons-material/ImageAspectRatio";
 
 interface StyledListItemProps extends ListItemProps {
-  active?: boolean;
+  active?: string;
 }
 
 const LogoContainer = styled("div")``;
@@ -57,7 +57,7 @@ const StyledListItem = styled(ListItem)<StyledListItemProps>`
   padding: 0;
   cursor: pointer;
   background-color: ${(props) =>
-    props.active ? "rgba(255, 255, 255, 0.05)" : "transparent"};
+    props.active === "true" ? "rgba(255, 255, 255, 0.05)" : "transparent"};
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
@@ -97,7 +97,7 @@ const Layout = ({
           />
         </LogoContainer>
         <List>
-          <StyledListItem active={active === "organisations"}>
+          <StyledListItem active={String(active === "organisations")}>
             <StyledLink href="/dashboard/organisations">
               <ListItemIcon>
                 <CorporateFareIcon />
@@ -106,7 +106,7 @@ const Layout = ({
             </StyledLink>
           </StyledListItem>
 
-          <StyledListItem active={active === "buildings"}>
+          <StyledListItem active={String(active === "buildings")}>
             <StyledLink href="/dashboard/buildings">
               <ListItemIcon>
                 <HomeWorkIcon />
@@ -114,7 +114,7 @@ const Layout = ({
               <ListItemText primary="Buildings" />
             </StyledLink>
           </StyledListItem>
-          <StyledListItem active={active === "floors"}>
+          <StyledListItem active={String(active === "floors")}>
             <StyledLink href="/dashboard/floors">
               <ListItemIcon>
                 <SpaceDashboardIcon />
@@ -122,7 +122,7 @@ const Layout = ({
               <ListItemText primary="Floors" />
             </StyledLink>
           </StyledListItem>
-          <StyledListItem active={active === "rooms"}>
+          <StyledListItem active={String(active === "rooms")}>
             <StyledLink href="/dashboard/rooms">
               <ListItemIcon>
                 <ImageAspectRatioIcon />

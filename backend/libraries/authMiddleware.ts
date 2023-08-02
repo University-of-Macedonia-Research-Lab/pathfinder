@@ -18,13 +18,12 @@ export const authMiddleware = (app: Express) => {
       resave: false,
       saveUninitialized: true,
       // cookie: { secure: true },
-    }),
+    })
   );
   app.use(passport.initialize());
   app.use(passport.session());
 
   passport.serializeUser((user: PassportUser, done) => {
-    console.log("usersssss", user);
     if (user.id != null) {
       // check if id is not null and not undefined
       done(null, user.id);
@@ -63,7 +62,7 @@ export const authMiddleware = (app: Express) => {
         }
 
         return cb(null, user);
-      },
-    ),
+      }
+    )
   );
 };

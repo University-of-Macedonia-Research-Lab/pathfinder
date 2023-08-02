@@ -1,10 +1,13 @@
 "use client";
 import { styled } from "@mui/material";
 import Layout from "../../../../components/Layout";
-import { PrimaryActionButton } from "../../../../components/Buttons";
 import colors from "../../../../helpers/colors";
-import { CREATE_ORGANIZATION_PATH } from "../../../../helpers/enums";
 import Breadcrumbs from "../../../../components/Breadcrumb";
+import {
+  useGetOrganisationById,
+  useGetOrganisations,
+} from "../../../../helpers/api";
+import Loader from "../../../../components/Loader";
 
 const StyledContainer = styled("div")`
   flex-grow: 1;
@@ -28,18 +31,36 @@ const StyledBody = styled("div")`
   flex-direction: column;
 `;
 
-export default function Index() {
+export default function Index({
+  params,
+  searchParams,
+}: {
+  params: { organisationId: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  // Access route parameter
+  const { data: organisation, error } = useGetOrganisationById(
+    params.organisationId
+  );
+
   return (
     <Layout active="organisations">
       <StyledContainer>
         <StyledHeader>
-          <Breadcrumbs items={[{ label: "Organisations" }]} />
-          <PrimaryActionButton href={CREATE_ORGANIZATION_PATH}>
-            Create Organization
-          </PrimaryActionButton>
+          <Breadcrumbs
+            items={[
+              { label: "Organisations", path: "/dashboard/organisations/" },
+              {
+                label: organisation?.name,
+                path: "/dashboard/organisations/",
+              },
+            ]}
+          />
         </StyledHeader>
         <StyledBody>
           <p>View organization</p>
+          <p>{organisation?.name}</p>
+          <p>{organisation?.friendlyName}</p>
         </StyledBody>
       </StyledContainer>
     </Layout>

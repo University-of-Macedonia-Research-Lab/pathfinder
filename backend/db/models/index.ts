@@ -1,3 +1,3 @@
 export * from "./SequelizeMeta";
 export * from "./users";
-export * from "./Organisations";
+export * from "./organisations";

@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
@@ -14,11 +14,11 @@ router.get(
   passport.authenticate("google", {
     successRedirect: "/auth/google/success",
     failureRedirect: "/auth/google/failure",
-  }),
+  })
 );
 
 router.get("/auth/google/success", (_, res) =>
-  res.redirect(`${process.env.WEBSITE_URL}/dashboard`),
+  res.redirect(`${process.env.WEBSITE_URL}/dashboard`)
 );
 
 router.get("/auth/google/failure", (req, res) => res.end("you failed"));

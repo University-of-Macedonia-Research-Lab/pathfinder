@@ -11,7 +11,9 @@
     "streetsidesoftware",
     "vsmarketplacebadge",
     "visualstudio",
-    "Organisations"
+    "Organisations",
+    "tinycolor2",
+    "tinycolor"
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.

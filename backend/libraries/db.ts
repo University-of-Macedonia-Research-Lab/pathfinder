@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Sequelize } from "sequelize-typescript";
-import { users } from "../db/models";
+import { organisations, users } from "../db/models";
 // Retrieve values from .env file or default values
 const database = process.env.DB_NAME || "pathfinder";
 const username = process.env.DB_USERNAME || "postgres";
@@ -20,7 +20,7 @@ export const sequelize = new Sequelize({
   models: [__dirname + "/models"], // assuming your models are in a folder named 'models' in the same directory
 });
 
-sequelize.addModels([users]);
+sequelize.addModels([users, organisations]);
 // Sync all models with the database
 sequelize
   .sync()

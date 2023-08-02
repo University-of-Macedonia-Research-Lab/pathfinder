@@ -2,7 +2,7 @@ import {
 	Model, Table, Column, DataType, Index, Sequelize, ForeignKey 
 } from "sequelize-typescript";
 
-export interface OrganisationsAttributes {
+export interface organisationsAttributes {
     id?: string;
     name?: string;
     friendlyName?: string;
@@ -11,11 +11,11 @@ export interface OrganisationsAttributes {
 }
 
 @Table({
-	tableName: "Organisations",
+	tableName: "organisations",
 	schema: "public",
 	timestamps: false 
 })
-export class Organisations extends Model<OrganisationsAttributes, OrganisationsAttributes> implements OrganisationsAttributes {
+export class organisations extends Model<organisationsAttributes, organisationsAttributes> implements organisationsAttributes {
 
     @Column({
   primaryKey: true,
@@ -38,13 +38,15 @@ id!: string;
 
     @Column({
     	allowNull: true,
-    	type: DataType.DATE 
+    	type: DataType.DATE,
+    	defaultValue: Sequelize.literal("CURRENT_TIMESTAMP") 
     })
     	createdAt?: Date;
 
     @Column({
     	allowNull: true,
-    	type: DataType.DATE 
+    	type: DataType.DATE,
+    	defaultValue: Sequelize.literal("CURRENT_TIMESTAMP") 
     })
     	updatedAt?: Date;
 
