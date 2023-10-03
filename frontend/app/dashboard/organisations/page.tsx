@@ -88,13 +88,12 @@ const stringToColorHash = (str: string) => {
 
 function getColorFromPalette(str: string) {
   const hash = stringToColorHash(str);
-  const colorIndex = hash % colorScale.length;
+  const colorIndex = Math.abs(hash % colorScale.length);
   return colorScale[colorIndex];
 }
 
 export default function Index() {
   const { data: organisations, error } = useGetOrganisations();
-
   return (
     <Layout active="organisations">
       <StyledContainer>
