@@ -75,7 +75,7 @@ const Layout = ({
   active,
 }: {
   children: ReactNode;
-  active: "organisations" | "areas" | "buildings" | "floors" | "rooms";
+  active: "organisations" | "areas" | "buildings" | "floors";
 }) => {
   const { isLoading } = useAuth();
 
@@ -120,14 +120,6 @@ const Layout = ({
                 <SpaceDashboardIcon />
               </ListItemIcon>
               <ListItemText primary="Floors" />
-            </StyledLink>
-          </StyledListItem>
-          <StyledListItem active={String(active === "rooms")}>
-            <StyledLink href="/dashboard/rooms">
-              <ListItemIcon>
-                <ImageAspectRatioIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rooms" />
             </StyledLink>
           </StyledListItem>
           <StyledListItem onClick={logoutUser}>
