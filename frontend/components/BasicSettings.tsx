@@ -1,18 +1,10 @@
 "use client";
 import { styled } from "@mui/material";
 import colors from "../helpers/colors";
-import Layout from "./Layout";
 import { FC } from "react";
-import Breadcrumbs from "./Breadcrumb";
 import { createOrganisation, useGetOrganisations } from "../helpers/api";
 import { useFormik } from "formik";
-import LinkIcon from "@mui/icons-material/Link";
-import { MemberList } from "./MemberList";
-import Dropzone from "react-dropzone";
-import { PrimaryButton } from "./Buttons";
 import { TextField } from "@mui/material";
-import { names } from "tinycolor2";
-import { redirect } from "next/dist/server/api-utils";
 import { useRouter } from "next/navigation";
 export interface Organisation {
   id: string;
@@ -43,7 +35,8 @@ export const StyledBody = styled("div")`
   padding: 30px;
   flex-direction: column;
   background: #f5f5f5;
-  width: 574px;
+  flex: 1;
+  min-width: 390px;
   border-radius: 20px;
   padding: 40px;
   margin: 20px;

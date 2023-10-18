@@ -4,7 +4,6 @@ import Layout from "../../../../components/Layout";
 import { MemberList } from "../../../../components/MemberList";
 import React from "react";
 import Breadcrumbs from "../../../../components/Breadcrumb";
-import { PrimaryButton } from "../../../../components/Buttons";
 import { styled } from "@mui/material/styles";
 import SubmitButtonContainer from "../../../../components/SubmitContainer";
 const FormWrapper = styled("div")`
@@ -15,10 +14,6 @@ const FormWrapper = styled("div")`
   align-items: flex-start;
 `;
 
-const SubmitContainer = styled("div")`
-  text-align: right;
-  margin: 20px;
-`;
 function CreateFormPage() {
   return (
     <Layout active="organisations">
