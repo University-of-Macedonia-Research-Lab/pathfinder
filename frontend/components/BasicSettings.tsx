@@ -44,7 +44,6 @@ export const StyledBody = styled("div")`
   flex-direction: column;
   background: #f5f5f5;
   width: 574px;
-  height: 322px;
   border-radius: 20px;
   padding: 40px;
   margin: 20px;
@@ -115,55 +114,37 @@ const OrganisationForm: FC = () => {
   if (!organisations) return <div>Loading...</div>;
 
   return (
-    <Layout active="organisations">
-      <StyledContainer>
-        <StyledHeader>
-          <Breadcrumbs
-            items={[
-              { label: "Organisations", path: "/dashboard/organisations" },
-              { label: "Create" },
-            ]}
+    <StyledBody>
+      <SignUpContainer>
+        <form onSubmit={formik.handleSubmit}>
+          <StyledTextField
+            label="Name"
+            name="name"
+            variant="outlined"
+            fullWidth
+            placeholder="Please enter the name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
           />
-        </StyledHeader>
-        <StyledBody>
-          <SignUpContainer>
-            <form onSubmit={formik.handleSubmit}>
-              <StyledTextField
-                label="Name"
-                name="name"
-                variant="outlined"
-                fullWidth
-                placeholder="Please enter the name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-              />
-              {formik.errors.name ? (
-                <ValidateMessage>{formik.errors.name}</ValidateMessage>
-              ) : null}
+          {formik.errors.name ? (
+            <ValidateMessage>{formik.errors.name}</ValidateMessage>
+          ) : null}
 
-              <StyledTextField
-                label="URL Alias"
-                name="friendlyName"
-                variant="outlined"
-                fullWidth
-                placeholder="https://pathfinder/"
-                value={formik.values.friendlyName}
-                onChange={formik.handleChange}
-              />
-              {formik.errors.friendlyName ? (
-                <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
-              ) : null}
-            </form>
-          </SignUpContainer>
-        </StyledBody>
-        <StyledBody>
-          <MemberList />
-        </StyledBody>
-        <PrimaryButton type="submit" variant="contained">
-          Submit
-        </PrimaryButton>
-      </StyledContainer>
-    </Layout>
+          <StyledTextField
+            label="URL Alias"
+            name="friendlyName"
+            variant="outlined"
+            fullWidth
+            placeholder="https://pathfinder/"
+            value={formik.values.friendlyName}
+            onChange={formik.handleChange}
+          />
+          {formik.errors.friendlyName ? (
+            <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
+          ) : null}
+        </form>
+      </SignUpContainer>
+    </StyledBody>
   );
 };
 
