@@ -87,7 +87,7 @@ const stringToColorHash = (str: string) => {
 };
 
 function getColorFromPalette(str: string) {
-  const hash = stringToColorHash(str);
+  const hash = stringToColorHash(str || "No-friendlyName");
   const colorIndex = Math.abs(hash % colorScale.length);
   return colorScale[colorIndex];
 }

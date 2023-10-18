@@ -3,10 +3,11 @@ import { styled } from "@mui/system";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export const StyledButton = styled(Button)({
+export const PrimaryButton = styled(Button)({
   backgroundColor: "#2F8658",
   color: "white",
   width: "max-content",
+  marginTop: "10px",
   "&:hover": {
     backgroundColor: "#48AF74",
   },
@@ -21,7 +22,7 @@ export const PrimaryActionButton = ({
 }) => {
   return (
     <Link href={href}>
-      <StyledButton variant="contained">{children}</StyledButton>
+      <PrimaryButton variant="contained">{children}</PrimaryButton>
     </Link>
   );
 };
