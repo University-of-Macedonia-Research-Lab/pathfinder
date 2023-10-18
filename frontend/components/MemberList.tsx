@@ -5,7 +5,7 @@ import { styled } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import TextField from "@mui/material/TextField";
-
+import { StyledBody } from "./BasicSettings";
 const StyledLists = styled("div")`
   margin-bottom: 10px;
   padding: 3px;
@@ -29,10 +29,12 @@ export const MemberList = () => {
 
   useEffect(() => {
     const newMembers = [...members];
+    // if last element of members is not empty then add an empty record at the end
     if (newMembers.length === 0 || newMembers[newMembers.length - 1] !== "") {
       newMembers.push("");
     }
 
+    // if the two last elements ar empty then remove the last element
     if (
       newMembers.length >= 2 &&
       newMembers[newMembers.length - 1] === "" &&
@@ -42,30 +44,30 @@ export const MemberList = () => {
     }
 
     setMembers(newMembers);
-    // if last element of members is not empty then add an empty record at the end
-    // if the two last elements ar empty then remove the last element
   }, [members]);
 
   return (
-    <List>
-      <StyledLists>
-        <div>
-          {members.map((member, index) => (
-            <ListItem key={index}>
-              <ListItemIcon>
-                <AccountCircleIcon />
-              </ListItemIcon>
-              <TextField
-                label="email"
-                value={member}
-                onChange={handleMemberChange(index)}
-                placeholder="Enter email..."
-              />
-              <DeleteIcon onClick={handleDelete(index)}></DeleteIcon>
-            </ListItem>
-          ))}
-        </div>
-      </StyledLists>
-    </List>
+    <StyledBody>
+      <List>
+        <StyledLists>
+          <div>
+            {members.map((member, index) => (
+              <ListItem key={index}>
+                <ListItemIcon>
+                  <AccountCircleIcon />
+                </ListItemIcon>
+                <TextField
+                  label="email"
+                  value={member}
+                  onChange={handleMemberChange(index)}
+                  placeholder="Enter email..."
+                />
+                <DeleteIcon onClick={handleDelete(index)}></DeleteIcon>
+              </ListItem>
+            ))}
+          </div>
+        </StyledLists>
+      </List>
+    </StyledBody>
   );
 };
