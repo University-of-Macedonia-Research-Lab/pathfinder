@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { List, ListItem, ListItemIcon } from "@mui/material";
+import { ListItemIcon } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { styled } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
+
 import { StyledBody } from "./BasicSettings";
 const StyledLists = styled("div")`
-  margin-bottom: 10px;
-  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const MemberList = () => {
-  const [members, setMembers] = useState<string[]>(["", ""]);
+  const [members, setMembers] = useState<string[]>([""]);
 
   const handleMemberChange =
     (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,7 +37,7 @@ export const MemberList = () => {
       newMembers.push("");
     }
 
-    // if the two last elements ar empty then remove the last element
+    // if the two last elements are empty then remove the last element
     if (
       newMembers.length >= 2 &&
       newMembers[newMembers.length - 1] === "" &&
@@ -48,28 +51,29 @@ export const MemberList = () => {
 
   return (
     <StyledBody>
-      <List>
-        <StyledLists>
-          <div>
-            {members.map((member, index) => (
-              <ListItem key={index}>
-                <ListItemIcon>
-                  <AccountCircleIcon />
-                </ListItemIcon>
-                <TextField
-                  label="email"
-                  value={member}
-                  onChange={handleMemberChange(index)}
-                  placeholder="Enter email..."
-                />
-                {index < members.length - 1 && (
-                  <DeleteIcon onClick={handleDelete(index)} />
-                )}
-              </ListItem>
-            ))}
-          </div>
+      <Typography variant="h5" gutterBottom>
+        Members
+      </Typography>
+      {members.map((member, index) => (
+        <StyledLists key={index}>
+          <ListItemIcon>
+            <AccountCircleIcon fontSize="large" />
+          </ListItemIcon>
+          <TextField
+            fullWidth
+            label="email"
+            value={member}
+            onChange={handleMemberChange(index)}
+            placeholder="Enter email..."
+          />
+
+          {index < members.length - 1 && (
+            <IconButton>
+              <DeleteIcon onClick={handleDelete(index)} />
+            </IconButton>
+          )}
         </StyledLists>
-      </List>
+      ))}
     </StyledBody>
   );
 };
