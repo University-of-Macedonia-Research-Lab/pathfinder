@@ -1,11 +1,12 @@
 "use client";
-import { styled } from "@mui/material";
-import colors from "../helpers/colors";
 import { FC } from "react";
-import { createOrganisation, useGetOrganisations } from "../helpers/api";
 import { useFormik } from "formik";
-import { TextField } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { styled, TextField, Typography } from "@mui/material";
+
+import colors from "../helpers/colors";
+import { createOrganisation, useGetOrganisations } from "../helpers/api";
+
 export interface Organisation {
   id: string;
   name: string;
@@ -37,35 +38,12 @@ export const StyledBody = styled("div")`
   flex: 1;
   min-width: 390px;
   border-radius: 20px;
-  padding: 40px;
-  margin: 20px;
+  padding: 20px;
+  gap: 20px;
 `;
 
 export const ValidateMessage = styled("div")`
   color: ${colors.red.tone1};
-`;
-
-export const StyledTextField = styled(TextField)`
-  margin-bottom: 20px;
-`;
-
-export const SignUpContainer = styled("div")`
-  form {
-    display: flex;
-    flex-wrap: wrap;
-    width: 70%;
-    margin: 0px;
-
-    label {
-      display: inline-block;
-      color: ${colors.black.tone1};
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 400;
-      line-height: normal;
-      width: 100px;
-    }
-  }
 `;
 
 const OrganisationForm: FC = () => {
@@ -106,35 +84,34 @@ const OrganisationForm: FC = () => {
 
   return (
     <StyledBody>
-      <SignUpContainer>
-        <form onSubmit={formik.handleSubmit}>
-          <StyledTextField
-            label="Name"
-            name="name"
-            variant="outlined"
-            fullWidth
-            placeholder="Please enter the name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-          />
-          {formik.errors.name && (
-            <ValidateMessage>{formik.errors.name}</ValidateMessage>
-          )}
+      <Typography variant="h5" gutterBottom>
+        Basic Settings
+      </Typography>
+      <TextField
+        label="Name"
+        name="name"
+        variant="outlined"
+        fullWidth
+        placeholder="Please enter the name"
+        value={formik.values.name}
+        onChange={formik.handleChange}
+      />
+      {formik.errors.name && (
+        <ValidateMessage>{formik.errors.name}</ValidateMessage>
+      )}
 
-          <StyledTextField
-            label="URL Alias"
-            name="friendlyName"
-            variant="outlined"
-            fullWidth
-            placeholder="https://pathfinder/"
-            value={formik.values.friendlyName}
-            onChange={formik.handleChange}
-          />
-          {formik.errors.friendlyName && (
-            <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
-          )}
-        </form>
-      </SignUpContainer>
+      <TextField
+        label="URL Alias"
+        name="friendlyName"
+        variant="outlined"
+        fullWidth
+        placeholder="https://pathfinder/"
+        value={formik.values.friendlyName}
+        onChange={formik.handleChange}
+      />
+      {formik.errors.friendlyName && (
+        <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
+      )}
     </StyledBody>
   );
 };
