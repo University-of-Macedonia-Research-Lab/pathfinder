@@ -32,9 +32,8 @@ export const StyledHeader = styled("div")`
 
 export const StyledBody = styled("div")`
   display: flex;
-  padding: 30px;
   flex-direction: column;
-  background: #f5f5f5;
+  background: ${colors.gray.tone4};
   flex: 1;
   min-width: 390px;
   border-radius: 20px;
@@ -43,7 +42,7 @@ export const StyledBody = styled("div")`
 `;
 
 export const ValidateMessage = styled("div")`
-  color: red;
+  color: ${colors.red.tone1};
 `;
 
 export const StyledTextField = styled(TextField)`
@@ -56,11 +55,10 @@ export const SignUpContainer = styled("div")`
     flex-wrap: wrap;
     width: 70%;
     margin: 0px;
-    margin-left: 0px;
 
     label {
       display: inline-block;
-      color: #000;
+      color: ${colors.black.tone1};
       font-size: 16px;
       font-style: normal;
       font-weight: 400;
@@ -85,7 +83,7 @@ const OrganisationForm: FC = () => {
       let errors: Partial<typeof values> = {};
 
       if (!values.name) {
-        errors.name = "Please enter your name!";
+        errors.name = "Please enter a name!";
       }
 
       if (!values.friendlyName) {
