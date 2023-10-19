@@ -2,7 +2,6 @@
 import OrganisationForm from "../../../../components/BasicSettings";
 import Layout from "../../../../components/Layout";
 import { MemberList } from "../../../../components/MemberList";
-import React from "react";
 import Breadcrumbs from "../../../../components/Breadcrumb";
 import { styled } from "@mui/material/styles";
 import SubmitButtonContainer from "../../../../components/SubmitContainer";
