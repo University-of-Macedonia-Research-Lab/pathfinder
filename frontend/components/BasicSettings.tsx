@@ -117,9 +117,9 @@ const OrganisationForm: FC = () => {
             value={formik.values.name}
             onChange={formik.handleChange}
           />
-          {formik.errors.name ? (
+          {formik.errors.name && (
             <ValidateMessage>{formik.errors.name}</ValidateMessage>
-          ) : null}
+          )}
 
           <StyledTextField
             label="URL Alias"
@@ -130,9 +130,9 @@ const OrganisationForm: FC = () => {
             value={formik.values.friendlyName}
             onChange={formik.handleChange}
           />
-          {formik.errors.friendlyName ? (
+          {formik.errors.friendlyName && (
             <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
-          ) : null}
+          )}
         </form>
       </SignUpContainer>
     </StyledBody>
