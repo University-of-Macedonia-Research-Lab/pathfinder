@@ -2,13 +2,14 @@ import { Button } from "@mui/material";
 import { styled } from "@mui/system";
 import Link from "next/link";
 import { ReactNode } from "react";
+import colors from "../helpers/colors";
 
 export const PrimaryButton = styled(Button)({
-  backgroundColor: "#2F8658",
-  color: "white",
+  backgroundColor: colors.green.tone1,
+  color: colors.white.tone2,
   width: "max-content",
   "&:hover": {
-    backgroundColor: "#48AF74",
+    backgroundColor: colors.green.tone2,
   },
 });
 
