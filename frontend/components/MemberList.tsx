@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { List, ListItem, ListItemIcon } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { styled } from "@mui/material";
@@ -62,7 +62,9 @@ export const MemberList = () => {
                   onChange={handleMemberChange(index)}
                   placeholder="Enter email..."
                 />
-                <DeleteIcon onClick={handleDelete(index)}></DeleteIcon>
+                {index < members.length - 1 && (
+                  <DeleteIcon onClick={handleDelete(index)} />
+                )}
               </ListItem>
             ))}
           </div>
