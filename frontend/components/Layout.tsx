@@ -68,6 +68,8 @@ const StyledContainer = styled("div")`
   flex-direction: column;
   overflow: auto;
   background-color: ${colors.white.tone3};
+  padding: 20px;
+  gap: 20px;
 `;
 
 const Layout = ({

@@ -11,6 +11,7 @@ const FormWrapper = styled("div")`
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 20px;
 `;
 
 function CreateFormPage() {
