@@ -7,7 +7,6 @@ export const PrimaryButton = styled(Button)({
   backgroundColor: "#2F8658",
   color: "white",
   width: "max-content",
-  marginTop: "10px",
   "&:hover": {
     backgroundColor: "#48AF74",
   },
