@@ -28,7 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "components/Dropzone.jsx"
+    "components/Dropzone.tsx"
   ],
   "exclude": ["node_modules"]
 }
