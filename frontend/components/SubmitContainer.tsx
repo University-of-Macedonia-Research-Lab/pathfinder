@@ -1,7 +1,5 @@
-import { useContext } from "react";
 import { styled } from "@mui/material/styles";
 import { PrimaryButton } from "./Buttons";
-import { SubmitContext } from "../contexts/OrganisationContext";
 
 const StyledWrapper = styled("div")`
   display: flex;

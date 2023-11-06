@@ -26,6 +26,3 @@ export const PrimaryActionButton = ({
     </Link>
   );
 };
-
-// Usage:
-// <PrimaryActionButton>Click me</PrimaryActionButton>

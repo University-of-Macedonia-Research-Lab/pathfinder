@@ -3,7 +3,7 @@ import Layout from "../../../components/Layout";
 import colors from "../../../helpers/colors";
 import { PrimaryActionButton } from "../../../components/Buttons";
 import { CREATE_ORGANIZATION_PATH } from "../../../helpers/enums";
-import Breadcrumbs from "../../../components/Breadcrumb";
+import Breadcrumb from "../../../components/Breadcrumb";
 import { useGetOrganisations } from "../../../helpers/api";
 import { Organisation } from "../../../components/OrganisationForm";
 
@@ -98,7 +98,7 @@ export default function Index() {
     <Layout active="organisations">
       <StyledContainer>
         <StyledHeader>
-          <Breadcrumbs items={[{ label: "Organisations" }]} />
+          <Breadcrumb items={[{ label: "Organisations" }]} />
           <PrimaryActionButton href={CREATE_ORGANIZATION_PATH}>
             Create Organization
           </PrimaryActionButton>
