@@ -1,5 +1,7 @@
-import { PrimaryButton } from "./Buttons";
+import { useContext } from "react";
 import { styled } from "@mui/material/styles";
+import { PrimaryButton } from "./Buttons";
+import { SubmitContext } from "../app/contexts/SubmitContext";
 
 const SubmitContainer = styled("div")`
   display: flex;
@@ -24,20 +26,22 @@ const CancelButton = styled(PrimaryButton)`
 `;
 
 const SubmitButtonContainer = () => {
-  const handleSubmit = () => {
-    console.log("Submitted");
-  };
-
-  const handleCancel = () => {
-    console.log("Canceled");
-  };
+  // const { handleSubmit, handleCancel } = useContext(SubmitContext);
 
   return (
     <SubmitContainer>
-      <CancelButton type="button" variant="outlined" onClick={handleCancel}>
+      <CancelButton
+        type="button"
+        variant="outlined"
+        onClick={() => console.log("")}
+      >
         Cancel
       </CancelButton>
-      <PrimaryButton type="submit" variant="contained" onClick={handleSubmit}>
+      <PrimaryButton
+        type="submit"
+        variant="contained"
+        onClick={() => console.log("")}
+      >
         Submit
       </PrimaryButton>
     </SubmitContainer>

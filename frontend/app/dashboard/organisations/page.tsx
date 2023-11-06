@@ -5,7 +5,7 @@ import { PrimaryActionButton } from "../../../components/Buttons";
 import { CREATE_ORGANIZATION_PATH } from "../../../helpers/enums";
 import Breadcrumbs from "../../../components/Breadcrumb";
 import { useGetOrganisations } from "../../../helpers/api";
-import { Organisation } from "../../../components/BasicSettings";
+import { Organisation } from "../../../components/OrganisationForm";
 
 import Link from "next/link";
 import { styled, Card, CardContent, Typography, darken } from "@mui/material";

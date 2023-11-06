@@ -7,14 +7,14 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 
-import { StyledBody } from "./BasicSettings";
+import { StyledBody } from "./OrganisationForm";
 const StyledLists = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-export const MemberList = () => {
+const MemberList = () => {
   const [members, setMembers] = useState<string[]>([""]);
 
   const handleMemberChange =
@@ -77,3 +77,5 @@ export const MemberList = () => {
     </StyledBody>
   );
 };
+
+export default MemberList;

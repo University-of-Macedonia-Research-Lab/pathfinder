@@ -1,4 +1,5 @@
 "use client";
+import { ReactNode } from "react";
 import {
   List,
   ListItem,
@@ -7,21 +8,16 @@ import {
   styled,
 } from "@mui/material";
 import { ListItemProps } from "@mui/material/ListItem";
-
+import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { ReactNode } from "react";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
 import Image from "next/image";
-import colors from "../helpers/colors";
-import { useAuth } from "../helpers/hooks";
 import Loader from "./Loader";
 import { logoutUser } from "../helpers/api";
 import Link from "next/link";
-
-import CorporateFareIcon from "@mui/icons-material/CorporateFare";
-import LocationCityIcon from "@mui/icons-material/LocationCity";
-import HomeWorkIcon from "@mui/icons-material/HomeWork";
-import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
-import ImageAspectRatioIcon from "@mui/icons-material/ImageAspectRatio";
+import colors from "../helpers/colors";
+import { useAuth } from "../helpers/hooks";
 
 interface StyledListItemProps extends ListItemProps {
   active?: string;
@@ -86,6 +82,7 @@ const Layout = ({
   }
 
   return (
+    // <SubmitProvider>
     <StyledWrapper>
       <StyledMenu>
         <LogoContainer>
@@ -136,6 +133,7 @@ const Layout = ({
       </StyledMenu>
       <StyledContainer>{children}</StyledContainer>
     </StyledWrapper>
+    // </SubmitProvider>
   );
 };
 
