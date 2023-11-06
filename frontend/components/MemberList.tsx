@@ -7,14 +7,19 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 
-import { StyledBody } from "./OrganisationForm";
+import { Organisation, StyledBody } from "./OrganisationForm";
+import { FormikProps } from "formik";
 const StyledLists = styled("div")`
   display: flex;
   align-items: center;
   justify-content: center;
 `;
 
-const MemberList = () => {
+const MemberList = ({
+  formikProps,
+}: {
+  formikProps: FormikProps<Organisation>;
+}) => {
   const [members, setMembers] = useState<string[]>([""]);
 
   const handleMemberChange =

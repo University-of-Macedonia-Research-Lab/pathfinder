@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { styled } from "@mui/material/styles";
 import { PrimaryButton } from "./Buttons";
-import { SubmitContext } from "../contexts/SubmitContext";
+import { SubmitContext } from "../contexts/OrganisationContext";
 
 const StyledWrapper = styled("div")`
   display: flex;
@@ -29,15 +29,19 @@ const SubmitContainer = ({
   handleSubmit,
   handleCancel,
 }: {
-  handleSubmit: () => void;
+  handleSubmit?: () => void;
   handleCancel: () => void;
 }) => {
   return (
     <StyledWrapper>
-      <CancelButton type="button" variant="outlined" onClick={handleSubmit}>
+      <CancelButton type="button" variant="outlined" onClick={handleCancel}>
         Cancel
       </CancelButton>
-      <PrimaryButton type="submit" variant="contained" onClick={handleCancel}>
+      <PrimaryButton
+        type="submit"
+        variant="contained"
+        onClick={() => handleSubmit?.()}
+      >
         Submit
       </PrimaryButton>
     </StyledWrapper>

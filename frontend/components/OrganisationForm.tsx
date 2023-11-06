@@ -1,6 +1,6 @@
 "use client";
 import { FC } from "react";
-import { useFormik } from "formik";
+import { FormikProps, useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { styled, TextField, Typography } from "@mui/material";
 
@@ -8,9 +8,10 @@ import colors from "../helpers/colors";
 import { createOrganisation, useGetOrganisations } from "../helpers/api";
 
 export interface Organisation {
-  id: string;
+  id?: string;
   name: string;
   friendlyName: string;
+  members?: string[] | never[] | undefined;
 }
 
 export const StyledContainer = styled("div")`
@@ -46,42 +47,11 @@ export const ValidateMessage = styled("div")`
   color: ${colors.red.tone1};
 `;
 
-const OrganisationForm: FC = () => {
-  const { data: organisations, error } = useGetOrganisations();
-  const router = useRouter();
-
-  const formik = useFormik({
-    validateOnChange: false,
-    validateOnBlur: false,
-    initialValues: {
-      name: "",
-      friendlyName: "",
-    },
-    validate: (values) => {
-      let errors: Partial<typeof values> = {};
-
-      if (!values.name) {
-        errors.name = "Please enter a name!";
-      }
-
-      if (!values.friendlyName) {
-        errors.friendlyName = "Please enter a valid URL!";
-      }
-      return errors;
-    },
-    onSubmit: async (values) => {
-      try {
-        await createOrganisation(values, organisations);
-        router.push("/dashboard");
-      } catch (err) {
-        console.error(err);
-      }
-    },
-  });
-
-  if (error) return <div>Failed to load</div>;
-  if (!organisations) return <div>Loading...</div>;
-
+const OrganisationForm = ({
+  formikProps,
+}: {
+  formikProps: FormikProps<Organisation>;
+}) => {
   return (
     <StyledBody>
       <Typography variant="h5" gutterBottom>
@@ -93,11 +63,11 @@ const OrganisationForm: FC = () => {
         variant="outlined"
         fullWidth
         placeholder="Please enter the name"
-        value={formik.values.name}
-        onChange={formik.handleChange}
+        value={formikProps.values.name}
+        onChange={formikProps.handleChange}
       />
-      {formik.errors.name && (
-        <ValidateMessage>{formik.errors.name}</ValidateMessage>
+      {formikProps.errors.name && (
+        <ValidateMessage>{formikProps.errors.name}</ValidateMessage>
       )}
 
       <TextField
@@ -106,11 +76,11 @@ const OrganisationForm: FC = () => {
         variant="outlined"
         fullWidth
         placeholder="https://pathfinder/"
-        value={formik.values.friendlyName}
-        onChange={formik.handleChange}
+        value={formikProps.values.friendlyName}
+        onChange={formikProps.handleChange}
       />
-      {formik.errors.friendlyName && (
-        <ValidateMessage>{formik.errors.friendlyName}</ValidateMessage>
+      {formikProps.errors.friendlyName && (
+        <ValidateMessage>{formikProps.errors.friendlyName}</ValidateMessage>
       )}
     </StyledBody>
   );
