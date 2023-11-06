@@ -37,6 +37,7 @@ const StyledMenu = styled("div")`
   flex-direction: column;
   overflow: auto;
   max-width: 300px;
+  min-width: 200px;
   background-color: ${colors.green.tone0};
   & * {
     color: ${colors.white.tone3};
@@ -67,7 +68,10 @@ const StyledContainer = styled("div")`
   padding: 20px;
   gap: 20px;
 `;
-
+const StyledImage = styled(Image)`
+  padding: 20px;
+  height: auto;
+`;
 const Layout = ({
   children,
   active,
@@ -86,13 +90,12 @@ const Layout = ({
     <StyledWrapper>
       <StyledMenu>
         <LogoContainer>
-          <Image
+          <StyledImage
             src="/PathFinder.svg"
             alt="Next.js Logo"
             width={180}
             height={80}
             priority
-            style={{ paddingLeft: "20px" }}
           />
         </LogoContainer>
         <List>

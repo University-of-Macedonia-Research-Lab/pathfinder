@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import { styled } from "@mui/material/styles";
 import { PrimaryButton } from "./Buttons";
-import { SubmitContext } from "../app/contexts/SubmitContext";
+import { SubmitContext } from "../contexts/SubmitContext";
 
-const SubmitContainer = styled("div")`
+const StyledWrapper = styled("div")`
   display: flex;
   justify-content: flex-end;
   gap: 20px;
@@ -25,27 +25,23 @@ const CancelButton = styled(PrimaryButton)`
   }
 `;
 
-const SubmitButtonContainer = () => {
-  // const { handleSubmit, handleCancel } = useContext(SubmitContext);
-
+const SubmitContainer = ({
+  handleSubmit,
+  handleCancel,
+}: {
+  handleSubmit: () => void;
+  handleCancel: () => void;
+}) => {
   return (
-    <SubmitContainer>
-      <CancelButton
-        type="button"
-        variant="outlined"
-        onClick={() => console.log("")}
-      >
+    <StyledWrapper>
+      <CancelButton type="button" variant="outlined" onClick={handleSubmit}>
         Cancel
       </CancelButton>
-      <PrimaryButton
-        type="submit"
-        variant="contained"
-        onClick={() => console.log("")}
-      >
+      <PrimaryButton type="submit" variant="contained" onClick={handleCancel}>
         Submit
       </PrimaryButton>
-    </SubmitContainer>
+    </StyledWrapper>
   );
 };
 
-export default SubmitButtonContainer;
+export default SubmitContainer;

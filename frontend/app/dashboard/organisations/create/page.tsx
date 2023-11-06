@@ -15,7 +15,13 @@ const FormWrapper = styled("div")`
   gap: 20px;
 `;
 
-function CreateFormPage() {
+function CreateOrganisationPage() {
+  const handleSubmit = () => {
+    console.log("submit");
+  };
+  const handleCancel = () => {
+    console.log("cancel");
+  };
   return (
     <Layout active="organisations">
       <Breadcrumb
@@ -24,7 +30,10 @@ function CreateFormPage() {
           { label: "Create" },
         ]}
       />
-      <SubmitContainer />
+      <SubmitContainer
+        handleSubmit={handleSubmit}
+        handleCancel={handleCancel}
+      />
       <FormWrapper>
         <OrganisationForm />
         <MemberList />
@@ -33,4 +42,4 @@ function CreateFormPage() {
   );
 }
 
-export default CreateFormPage;
+export default CreateOrganisationPage;

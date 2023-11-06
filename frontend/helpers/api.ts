@@ -1,5 +1,5 @@
 import useSWR, { mutate } from "swr";
-import { Organisation } from "../app/dashboard/organisations/create/page";
+import { Organisation } from "../components/OrganisationForm";
 const swrOptions = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
@@ -24,7 +24,6 @@ export const useGetUser = () => {
 };
 
 export const logoutUser = async () => {
-  console.log("in here");
   return await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/logout`, {
     method: "POST",
     credentials: "include",

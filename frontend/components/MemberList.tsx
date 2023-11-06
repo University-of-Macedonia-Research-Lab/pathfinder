@@ -45,8 +45,8 @@ const MemberList = () => {
     ) {
       newMembers.pop();
     }
-
-    setMembers(newMembers);
+    // update the members state only when length is different
+    if (newMembers.length !== members.length) setMembers(newMembers);
   }, [members]);
 
   return (

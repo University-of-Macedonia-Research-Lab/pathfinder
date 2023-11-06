@@ -12,10 +12,12 @@ interface Props {
 
 const SubmitProvider = ({ children }: Props) => {
   const handleSubmit = () => {
+    debugger;
     console.log("Submitted");
   };
 
   const handleCancel = () => {
+    debugger;
     console.log("Canceled");
   };
 
