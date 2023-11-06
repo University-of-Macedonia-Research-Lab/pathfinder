@@ -34,20 +34,14 @@ router.post("/logout", function (req, res) {
   });
 });
 router.get("/user", async (req, res, next) => {
-  if (req.user) {
-    res.json((req.user as any)?.dataValues);
-  } else {
-    next();
-  }
+  if (req.user) return res.json((req.user as any)?.dataValues);
+  res.status(401).json({ error: "Not logged in" });
 });
 
 router.get("/user/email/:email", async (req, res, next) => {
   const user = await domain.getUserByEmail(req.params.email);
-  if (user) {
-    res.json(user);
-  } else {
-    next();
-  }
+  if (user) return res.json(user);
+  res.status(401).json({ error: "Not logged in" });
 });
 
 export default router;
