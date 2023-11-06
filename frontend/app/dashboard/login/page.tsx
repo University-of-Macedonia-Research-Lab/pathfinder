@@ -67,6 +67,7 @@ const Login = () => {
   const { isLoading } = useAuth(false);
 
   const handleLogin = () => {
+    if (!window) return;
     window.location.replace(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`
     );
