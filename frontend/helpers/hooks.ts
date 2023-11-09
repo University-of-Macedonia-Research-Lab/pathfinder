@@ -7,7 +7,6 @@ export const useAuth = (authenticatedRoute: boolean = true) => {
   const { data: user, error, isLoading } = useGetUser();
 
   useEffect(() => {
-    console.log("useAuth", user, error, isLoading);
     // If fetching is not yet finished, do nothing
     if (isLoading) return;
     // If not authenticated and there's a route to redirect to

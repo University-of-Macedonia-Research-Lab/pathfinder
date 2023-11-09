@@ -1,102 +1,83 @@
 "use client";
-import { styled } from "@mui/material";
-import colors from "../../../../helpers/colors";
+import { styled } from "@mui/material/styles";
+import OrganisationForm, {
+  Organisation,
+} from "../../../../components/OrganisationForm";
 import Layout from "../../../../components/Layout";
-import Breadcrumbs from "../../../../components/Breadcrumb";
-
-import React, { useState, FormEvent } from "react";
-import { TextField, Button } from "@mui/material";
+import MemberList from "../../../../components/MemberList";
+import Breadcrumb from "../../../../components/Breadcrumb";
+import SubmitContainer from "../../../../components/SubmitContainer";
+import { Formik, FormikValues } from "formik";
+import { useRouter } from "next/navigation";
 import {
   createOrganisation,
   useGetOrganisations,
 } from "../../../../helpers/api";
 
-export interface Organisation {
-  id: string;
-  name: string;
-  friendlyName: string;
-}
-
-const StyledContainer = styled("div")`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  color: ${colors.black.tone1};
-  padding:20px
-}
-`;
-const StyledHeader = styled("div")`
+const FormWrapper = styled("div")`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
-  padding: 20px;
+  align-items: flex-start;
+  gap: 20px;
 `;
 
-const StyledBody = styled("div")`
-  display: flex;
-  padding: 20px;
-  flex-direction: column;
-`;
+const initialValues: Organisation = {
+  name: "",
+  friendlyName: "",
+  members: [],
+};
 
-const OrganisationForm: React.FC = () => {
-  const [name, setName] = useState("");
-  const [friendlyName, setFriendlyName] = useState("");
+function CreateOrganisationPage() {
+  const router = useRouter();
+  const { data: organisations } = useGetOrganisations();
+  const handleCancel = () => router.push("/dashboard/organisations");
 
-  const { data: organisations, error } = useGetOrganisations();
-
-  if (error) return <div>Failed to load</div>;
-  if (!organisations) return <div>Loading...</div>;
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const newOrganisation = {
-      name,
-      friendlyName,
-    };
-
+  const onSubmit = async (values: Organisation) => {
+    console.log("submitted");
     try {
-      await createOrganisation(newOrganisation, organisations);
-      setName("");
-      setFriendlyName("");
+      await createOrganisation(values, organisations);
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
     }
   };
+
+  const validate = (values: FormikValues) => {
+    let errors: Partial<typeof values> = {};
+    if (!values.name) errors.name = "Please enter a name!";
+    if (!values.friendlyName) errors.friendlyName = "Please enter a valid URL!";
+    return errors;
+  };
+
   return (
     <Layout active="organisations">
-      <StyledContainer>
-        <StyledHeader>
-          <Breadcrumbs
-            items={[
-              { label: "Organisations", path: "/dashboard/organisations" },
-              { label: "Create" },
-            ]}
-          />
-        </StyledHeader>
-        <StyledBody>
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Name"
-              variant="outlined"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <TextField
-              label="Friendly Name"
-              variant="outlined"
-              value={friendlyName}
-              onChange={(e) => setFriendlyName(e.target.value)}
-            />
-            <Button variant="contained" color="primary" type="submit">
-              Submit
-            </Button>
+      <Breadcrumb
+        items={[
+          { label: "Organisations", path: "/dashboard/organisations" },
+          { label: "Create" },
+        ]}
+      />
+      <Formik
+        validateOnChange={false}
+        validateOnBlur={false}
+        onSubmit={onSubmit}
+        initialValues={initialValues}
+        validate={validate}
+      >
+        {(props) => (
+          <form onSubmit={props.handleSubmit}>
+            <SubmitContainer handleCancel={handleCancel} />
+            <FormWrapper>
+              <OrganisationForm formikProps={props} />
+              <MemberList formikProps={props} />
+            </FormWrapper>
           </form>
-        </StyledBody>
-      </StyledContainer>
+        )}
+      </Formik>
     </Layout>
   );
-};
+}
 
-export default OrganisationForm;
+export default CreateOrganisationPage;

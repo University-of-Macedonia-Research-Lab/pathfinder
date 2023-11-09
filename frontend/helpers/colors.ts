@@ -20,4 +20,16 @@ export default {
     tone2: "#4F4F4F",
     tone3: "#828282",
   },
+  gray: {
+    tone1: "#333333",
+    tone2: "#4F4F4F",
+    tone3: "#828282",
+    tone4: "#f5f5f5",
+  },
+  red: {
+    tone1: "#FF0000",
+    tone2: "#CC0000",
+    tone3: "#990000",
+    tone4: "#660000",
+  },
 };

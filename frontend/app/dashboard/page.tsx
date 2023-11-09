@@ -7,7 +7,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     router.push("/dashboard/organisations");
-  }, []);
+  }, [router]);
 
   return null; // or a loading spinner, etc.
 }

@@ -1,4 +1,4 @@
-import { Breadcrumbs as MuiBreadcrumbs } from "@mui/material";
+import { Breadcrumbs } from "@mui/material";
 import Link from "next/link";
 
 interface BreadcrumbItem {
@@ -10,24 +10,25 @@ interface BreadcrumbsProps {
   items: BreadcrumbItem[];
 }
 
-const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
+const Breadcrumb: React.FC<BreadcrumbsProps> = ({ items }) => {
   return (
-    <MuiBreadcrumbs separator="/">
+    <Breadcrumbs separator="/">
       {items.map(({ label, path }, index) => {
         const isLastItem = index === items.length - 1;
+        const key = path || "" + index;
 
         const breadcrumb = isLastItem ? (
-          <span key={path}>{label}</span>
+          <span key={key}>{label}</span>
         ) : (
-          <Link href={path || ""} key={path || ""} passHref>
+          <Link href={path || ""} key={key} passHref>
             {label}
           </Link>
         );
 
         return breadcrumb;
       })}
-    </MuiBreadcrumbs>
+    </Breadcrumbs>
   );
 };
 
-export default Breadcrumbs;
+export default Breadcrumb;

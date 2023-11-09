@@ -2,7 +2,6 @@
 import { styled } from "@mui/material";
 import Layout from "../../../components/Layout";
 import colors from "../../../helpers/colors";
-
 const StyledContainer = styled("div")`
   flex-grow: 1;
   display: flex;

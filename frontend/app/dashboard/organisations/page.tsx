@@ -3,9 +3,9 @@ import Layout from "../../../components/Layout";
 import colors from "../../../helpers/colors";
 import { PrimaryActionButton } from "../../../components/Buttons";
 import { CREATE_ORGANIZATION_PATH } from "../../../helpers/enums";
-import Breadcrumbs from "../../../components/Breadcrumb";
+import Breadcrumb from "../../../components/Breadcrumb";
 import { useGetOrganisations } from "../../../helpers/api";
-import { Organisation } from "./create/page";
+import { Organisation } from "../../../components/OrganisationForm";
 
 import Link from "next/link";
 import { styled, Card, CardContent, Typography, darken } from "@mui/material";
@@ -87,7 +87,7 @@ const stringToColorHash = (str: string) => {
 };
 
 function getColorFromPalette(str: string) {
-  const hash = stringToColorHash(str);
+  const hash = stringToColorHash(str || "No-friendlyName");
   const colorIndex = Math.abs(hash % colorScale.length);
   return colorScale[colorIndex];
 }
@@ -98,7 +98,7 @@ export default function Index() {
     <Layout active="organisations">
       <StyledContainer>
         <StyledHeader>
-          <Breadcrumbs items={[{ label: "Organisations" }]} />
+          <Breadcrumb items={[{ label: "Organisations" }]} />
           <PrimaryActionButton href={CREATE_ORGANIZATION_PATH}>
             Create Organization
           </PrimaryActionButton>

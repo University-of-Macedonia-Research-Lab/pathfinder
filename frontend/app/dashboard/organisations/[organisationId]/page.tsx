@@ -2,12 +2,8 @@
 import { styled } from "@mui/material";
 import Layout from "../../../../components/Layout";
 import colors from "../../../../helpers/colors";
-import Breadcrumbs from "../../../../components/Breadcrumb";
-import {
-  useGetOrganisationById,
-  useGetOrganisations,
-} from "../../../../helpers/api";
-import Loader from "../../../../components/Loader";
+import Breadcrumb from "../../../../components/Breadcrumb";
+import { useGetOrganisationById } from "../../../../helpers/api";
 
 const StyledContainer = styled("div")`
   flex-grow: 1;
@@ -33,7 +29,6 @@ const StyledBody = styled("div")`
 
 export default function Index({
   params,
-  searchParams,
 }: {
   params: { organisationId: string };
   searchParams: { [key: string]: string | string[] | undefined };
@@ -47,7 +42,7 @@ export default function Index({
     <Layout active="organisations">
       <StyledContainer>
         <StyledHeader>
-          <Breadcrumbs
+          <Breadcrumb
             items={[
               { label: "Organisations", path: "/dashboard/organisations/" },
               {

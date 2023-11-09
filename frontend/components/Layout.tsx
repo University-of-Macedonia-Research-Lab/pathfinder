@@ -1,4 +1,5 @@
 "use client";
+import { ReactNode } from "react";
 import {
   List,
   ListItem,
@@ -7,21 +8,16 @@ import {
   styled,
 } from "@mui/material";
 import { ListItemProps } from "@mui/material/ListItem";
-
+import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { ReactNode } from "react";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
 import Image from "next/image";
-import colors from "../helpers/colors";
-import { useAuth } from "../helpers/hooks";
 import Loader from "./Loader";
 import { logoutUser } from "../helpers/api";
 import Link from "next/link";
-
-import CorporateFareIcon from "@mui/icons-material/CorporateFare";
-import LocationCityIcon from "@mui/icons-material/LocationCity";
-import HomeWorkIcon from "@mui/icons-material/HomeWork";
-import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
-import ImageAspectRatioIcon from "@mui/icons-material/ImageAspectRatio";
+import colors from "../helpers/colors";
+import { useAuth } from "../helpers/hooks";
 
 interface StyledListItemProps extends ListItemProps {
   active?: string;
@@ -41,6 +37,7 @@ const StyledMenu = styled("div")`
   flex-direction: column;
   overflow: auto;
   max-width: 300px;
+  min-width: 200px;
   background-color: ${colors.green.tone0};
   & * {
     color: ${colors.white.tone3};
@@ -68,14 +65,19 @@ const StyledContainer = styled("div")`
   flex-direction: column;
   overflow: auto;
   background-color: ${colors.white.tone3};
+  padding: 20px;
+  gap: 20px;
 `;
-
+const StyledImage = styled(Image)`
+  padding: 20px;
+  height: auto;
+`;
 const Layout = ({
   children,
   active,
 }: {
   children: ReactNode;
-  active: "organisations" | "areas" | "buildings" | "floors" | "rooms";
+  active: "organisations" | "areas" | "buildings" | "floors";
 }) => {
   const { isLoading } = useAuth();
 
@@ -84,16 +86,16 @@ const Layout = ({
   }
 
   return (
+    // <SubmitProvider>
     <StyledWrapper>
       <StyledMenu>
         <LogoContainer>
-          <Image
+          <StyledImage
             src="/PathFinder.svg"
             alt="Next.js Logo"
             width={180}
             height={80}
             priority
-            style={{ paddingLeft: "20px" }}
           />
         </LogoContainer>
         <List>
@@ -122,14 +124,6 @@ const Layout = ({
               <ListItemText primary="Floors" />
             </StyledLink>
           </StyledListItem>
-          <StyledListItem active={String(active === "rooms")}>
-            <StyledLink href="/dashboard/rooms">
-              <ListItemIcon>
-                <ImageAspectRatioIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rooms" />
-            </StyledLink>
-          </StyledListItem>
           <StyledListItem onClick={logoutUser}>
             <StyledLink href="#">
               <ListItemIcon>
@@ -142,6 +136,7 @@ const Layout = ({
       </StyledMenu>
       <StyledContainer>{children}</StyledContainer>
     </StyledWrapper>
+    // </SubmitProvider>
   );
 };
 
