@@ -1,4 +1,4 @@
-import type { Point } from "@/lib/map/schema";
+import type { Point, RoomKind } from "@/lib/map/schema";
 
 export type Selected =
   | { kind: "node"; id: string }
@@ -18,6 +18,22 @@ export type Drawing =
   | { kind: "wall"; points: Point[]; wallKind: "interior" | "exterior" | "window" }
   | { kind: "polygon"; points: Point[] }
   | { kind: "graphLine"; points: GraphPolyPoint[] };
+
+/** Lightweight view of a sibling floor inside the same building, used by
+ *  the node editor to pick a cross-floor link target (stairs/elevators)
+ *  and to detect one-way links (where the reverse pointer is missing). */
+export type SiblingFloor = {
+  slug: string;
+  level: number;
+  nameEn: string;
+  nodes: {
+    id: string;
+    position: Point;
+    roomId?: string;
+    connectsToFloor?: { floorSlug: string; nodeId: string };
+  }[];
+  rooms: { id: string; code?: string; nameEn: string; kind: RoomKind }[];
+};
 
 export type SnapMode = "grid" | "endpoint" | "ortho" | "intersection";
 

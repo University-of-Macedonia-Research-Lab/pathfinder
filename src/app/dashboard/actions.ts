@@ -110,6 +110,66 @@ export async function saveFloorData(floorId: string, data: unknown) {
   return { ok: true };
 }
 
+const UpdateFloor = z.object({
+  id: z.string(),
+  nameEn: z.string().min(1).max(120),
+  nameEl: z.string().min(1).max(120),
+  level: z.coerce.number().int(),
+  slug: z
+    .string()
+    .max(80)
+    .transform((v) => v.trim())
+    .refine((v) => v === "" || /^[a-z0-9][a-z0-9-]*[a-z0-9]?$/.test(v), {
+      message: "Use lowercase letters, digits, and hyphens only",
+    }),
+});
+
+export async function updateFloor(formData: FormData) {
+  const user = await requireUser();
+  const parsed = UpdateFloor.parse({
+    id: formData.get("id"),
+    nameEn: formData.get("nameEn"),
+    nameEl: formData.get("nameEl"),
+    level: formData.get("level"),
+    slug: formData.get("slug") ?? "",
+  });
+
+  const existing = await prisma.floor.findFirst({
+    where: { id: parsed.id, building: { ownerId: user.id } },
+  });
+  if (!existing) throw new Error("Floor not found");
+
+  // Resolve the slug: keep current if blank; otherwise validate uniqueness
+  // within this building (floor slugs are unique per building, not globally).
+  let slug = existing.slug;
+  if (parsed.slug && parsed.slug !== existing.slug) {
+    const clash = await prisma.floor.findFirst({
+      where: {
+        buildingId: existing.buildingId,
+        slug: parsed.slug,
+        NOT: { id: existing.id },
+      },
+    });
+    if (clash) {
+      throw new Error("Another floor in this building already uses that slug");
+    }
+    slug = parsed.slug;
+  }
+
+  await prisma.floor.update({
+    where: { id: existing.id },
+    data: {
+      nameEn: parsed.nameEn,
+      nameEl: parsed.nameEl,
+      level: parsed.level,
+      slug,
+    },
+  });
+
+  revalidatePath(`/dashboard/buildings/${existing.buildingId}`);
+  revalidatePath(`/dashboard/buildings/${existing.buildingId}/floors/${existing.id}/edit`);
+}
+
 export async function deleteFloor(floorId: string) {
   const user = await requireUser();
   const floor = await prisma.floor.findFirst({
@@ -119,6 +179,70 @@ export async function deleteFloor(floorId: string) {
   if (!floor) throw new Error("Floor not found");
   await prisma.floor.delete({ where: { id: floor.id } });
   revalidatePath(`/dashboard/buildings/${floor.buildingId}`);
+}
+
+const UpdateBuilding = z.object({
+  id: z.string(),
+  nameEn: z.string().min(1).max(120),
+  nameEl: z.string().min(1).max(120),
+  description: z
+    .string()
+    .max(500)
+    .transform((v) => (v.trim() === "" ? null : v))
+    .nullable(),
+  publicSlug: z
+    .string()
+    .max(80)
+    .transform((v) => v.trim())
+    // Allow blank → keep current value (handled below). When provided, must
+    // be url-safe-ish: lowercase letters, digits, hyphens.
+    .refine((v) => v === "" || /^[a-z0-9][a-z0-9-]*[a-z0-9]?$/.test(v), {
+      message: "Use lowercase letters, digits, and hyphens only",
+    }),
+});
+
+export async function updateBuilding(formData: FormData) {
+  const user = await requireUser();
+  const parsed = UpdateBuilding.parse({
+    id: formData.get("id"),
+    nameEn: formData.get("nameEn"),
+    nameEl: formData.get("nameEl"),
+    description: formData.get("description") ?? "",
+    publicSlug: formData.get("publicSlug") ?? "",
+  });
+
+  const existing = await prisma.building.findFirst({
+    where: { id: parsed.id, ownerId: user.id },
+  });
+  if (!existing) throw new Error("Building not found");
+
+  // Resolve the public slug: if the user left it blank, keep the current one
+  // (or generate one when the building is currently unpublished and has no
+  // slug yet). If they typed a new value, verify uniqueness across buildings.
+  let publicSlug = existing.publicSlug;
+  if (parsed.publicSlug && parsed.publicSlug !== existing.publicSlug) {
+    const clash = await prisma.building.findFirst({
+      where: { publicSlug: parsed.publicSlug, NOT: { id: existing.id } },
+    });
+    if (clash) {
+      throw new Error("That public URL is already taken by another building");
+    }
+    publicSlug = parsed.publicSlug;
+  }
+
+  await prisma.building.update({
+    where: { id: existing.id },
+    data: {
+      nameEn: parsed.nameEn,
+      nameEl: parsed.nameEl,
+      description: parsed.description,
+      publicSlug,
+    },
+  });
+
+  revalidatePath(`/dashboard/buildings/${existing.id}`);
+  revalidatePath("/dashboard");
+  if (publicSlug) revalidatePath(`/p/${publicSlug}`);
 }
 
 export async function publishBuilding(buildingId: string) {

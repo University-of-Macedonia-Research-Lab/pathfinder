@@ -93,8 +93,22 @@ model Floor {
   nameEl     String
   /// JSON-encoded FloorMap (see src/lib/map/schema.ts).
   data       String
+  assets     FloorAsset[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@unique([buildingId, slug])
+}
+
+/// Bytes-on-disk for floor assets that are too big to live inside the
+/// FloorMap JSON — currently just background tracing images. Served via
+/// GET /api/assets/[id]. Drop-in replacement when we move to S3/Spaces:
+/// only the upload route needs to change.
+model FloorAsset {
+  id        String   @id @default(cuid())
+  floorId   String
+  floor     Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  mimeType  String
+  bytes     Bytes
+  createdAt DateTime @default(now())
 }

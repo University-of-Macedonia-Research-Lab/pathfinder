@@ -116,6 +116,21 @@ export function FloorMapInner({
 
   return (
     <>
+      {/* Tracing background (if the editor placed one). Rendered first so
+          it sits under the floor outline and every drawn element. */}
+      {map.background && (
+        <image
+          href={map.background.url}
+          x={map.background.x}
+          y={map.background.y}
+          width={map.background.width}
+          height={map.background.height}
+          opacity={map.background.opacity}
+          preserveAspectRatio="none"
+          pointerEvents="none"
+        />
+      )}
+
       {/* Floor base, the building's interior fill. */}
       {map.outline && (
         <path

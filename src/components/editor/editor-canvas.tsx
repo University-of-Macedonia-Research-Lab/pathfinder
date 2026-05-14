@@ -14,8 +14,8 @@
  * The first hit wins; later snaps are skipped. `kind` is reported back so we
  * can render an indicator at the snapped point.
  */
-import { useMemo, useRef, useState } from "react";
-import { MapContainer, SVGOverlay, ZoomControl, useMapEvent } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, SVGOverlay, ZoomControl, useMap, useMapEvent } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { FloorMap, Point } from "@/lib/map/schema";
@@ -27,7 +27,7 @@ import {
   snapToNearestEndpoint,
   type SnapResult,
 } from "@/lib/map/snap";
-import type { Drawing, Selected, SnapState } from "./types";
+import type { Drawing, Selected, SiblingFloor, SnapState } from "./types";
 import type { Mode, Tool } from "./tool-palette";
 
 type Props = {
@@ -37,6 +37,7 @@ type Props = {
   drawing: Drawing;
   selected: Selected;
   snap: SnapState;
+  siblingFloors: SiblingFloor[];
   onCanvasClick: (pos: Point) => void;
   onEntityClick: (s: NonNullable<Selected>) => void;
   onCommitDrawing: () => void;
@@ -58,18 +59,41 @@ export function EditorCanvas(props: Props) {
     return [[minY - pad, minX - pad], [maxY + pad, maxX + pad]];
   }, [minX, minY, maxX, maxY, longest]);
 
-  // Snap configuration that derives from bounds; passed to the click handler
-  // and the overlay so both share the same pipeline.
+  // Live Leaflet zoom level. Drives the zoom-adaptive grid: minor lines
+  // shrink as you zoom in (so smaller subdivisions appear), and coarsen
+  // when you zoom out so the render cost stays roughly constant.
+  const [zoom, setZoom] = useState(0);
+
+  // Snap + render configuration. When the floor has a manual `grid.step`
+  // we honour it (fixed). Otherwise we compute a "nice" major step (1-2-5
+  // series) sized so major gridlines fall every ~80 pixels at the current
+  // zoom, with sensible subdivisions per major. Snap reads `minorStep`.
   const snapCfg = useMemo(() => {
-    const step = Math.max(1, Math.round(longest / 20));
+    const threshold = longest * 0.025;
+    if (props.map.grid?.step && props.map.grid.step > 0) {
+      const majorStep = props.map.grid.step;
+      const subdivisions = Math.max(1, props.map.grid.subdivisions);
+      return {
+        majorStep,
+        subdivisions,
+        minorStep: majorStep / subdivisions,
+        threshold,
+        auto: false,
+      };
+    }
+    // Leaflet's CRS.Simple has 1 unit = 2^zoom px at zoom z.
+    const pxPerUnit = Math.pow(2, zoom);
+    const targetUnitsPerMajor = Math.max(0.0001, 80 / pxPerUnit);
+    const majorStep = niceMajorStep(targetUnitsPerMajor);
+    const subdivisions = subdivisionsFor(majorStep);
     return {
-      gridStep: step,
-      // Threshold for endpoint/intersection snap, in floor units. Tight
-      // enough that you don't accidentally snap when the cursor is far,
-      // wide enough to forgive a few pixels of misalignment.
-      threshold: longest * 0.025,
+      majorStep,
+      subdivisions,
+      minorStep: majorStep / subdivisions,
+      threshold,
+      auto: true,
     };
-  }, [longest]);
+  }, [longest, props.map.grid?.step, props.map.grid?.subdivisions, zoom]);
 
   return (
     <MapContainer
@@ -87,6 +111,7 @@ export function EditorCanvas(props: Props) {
       className="h-full w-full bg-[var(--surface-2)]"
     >
       <ZoomControl position="topright" />
+      <ZoomTracker onZoomChange={setZoom} />
       <SVGOverlay
         bounds={bounds}
         attributes={{
@@ -108,6 +133,48 @@ export function EditorCanvas(props: Props) {
       />
     </MapContainer>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Zoom-adaptive grid sizing helpers
+// ---------------------------------------------------------------------------
+
+/** Round a target step up to the nearest "nice" axis tick — 1, 2, 5, 10,
+ *  20, 50, 100, ... — i.e. the series surveyors / chart libraries use to
+ *  pick round-number axis labels. */
+function niceMajorStep(target: number): number {
+  if (!Number.isFinite(target) || target <= 0) return 1;
+  const exp = Math.floor(Math.log10(target));
+  const base = Math.pow(10, exp);
+  const m = target / base;
+  let lead: number;
+  if (m <= 1) lead = 1;
+  else if (m <= 2) lead = 2;
+  else if (m <= 5) lead = 5;
+  else lead = 10;
+  return lead * base;
+}
+
+/** How many minor lines to subdivide a "nice" major into so minors are
+ *  also at integer / half / fifth multiples of the floor unit. */
+function subdivisionsFor(majorStep: number): number {
+  const exp = Math.floor(Math.log10(majorStep));
+  const lead = Math.round(majorStep / Math.pow(10, exp));
+  if (lead === 1) return 5;
+  if (lead === 2) return 4;
+  if (lead === 5) return 5;
+  return 5;
+}
+
+function ZoomTracker({ onZoomChange }: { onZoomChange: (z: number) => void }) {
+  const map = useMap();
+  // Sync initial zoom once after mount — must be in an effect, not render,
+  // because calling the parent's setter during render is a React error.
+  useEffect(() => {
+    onZoomChange(map.getZoom());
+  }, [map, onZoomChange]);
+  useMapEvent("zoom", () => onZoomChange(map.getZoom()));
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,7 +260,7 @@ function CanvasMapEvents({
   tool: Tool;
   drawing: Drawing;
   snap: SnapState;
-  snapCfg: { gridStep: number; threshold: number };
+  snapCfg: { majorStep: number; minorStep: number; subdivisions: number; threshold: number; auto: boolean };
   onCanvasClick: (pos: Point) => void;
   onCommitDrawing: () => void;
 }) {
@@ -207,7 +274,7 @@ function CanvasMapEvents({
       drawing,
       snap,
       threshold: snapCfg.threshold,
-      gridStep: snapCfg.gridStep,
+      gridStep: snapCfg.minorStep,
     });
     onCanvasClick(s.point);
   });
@@ -236,13 +303,14 @@ function EditorOverlay({
   drawing,
   selected,
   snap,
+  siblingFloors,
   onEntityClick,
   onNodeDrag,
   longest,
   snapCfg,
 }: Props & {
   longest: number;
-  snapCfg: { gridStep: number; threshold: number };
+  snapCfg: { majorStep: number; minorStep: number; subdivisions: number; threshold: number; auto: boolean };
 }) {
   const [cursor, setCursor] = useState<Point | null>(null);
   const [snappedCursor, setSnappedCursor] = useState<SnapResult | null>(null);
@@ -295,7 +363,27 @@ function EditorOverlay({
         strokeWidth={longest * 0.003}
         pointerEvents="none"
       />
-      <Grid bounds={map.bounds} step={snapCfg.gridStep} longest={longest} />
+      {/* Tracing background — drawn after floor base so it sits on top of
+          the empty fill but below everything the user is drawing. The
+          opacity slider lets the user keep it visible while editing. */}
+      {map.background && (
+        <image
+          href={map.background.url}
+          x={map.background.x}
+          y={map.background.y}
+          width={map.background.width}
+          height={map.background.height}
+          opacity={map.background.opacity}
+          preserveAspectRatio="none"
+          pointerEvents="none"
+        />
+      )}
+      <Grid
+        bounds={map.bounds}
+        step={snapCfg.majorStep}
+        subdivisions={snapCfg.subdivisions}
+        longest={longest}
+      />
 
       {/* Cursor capture rect (only when relevant). Updates both raw cursor
           and snapped cursor so the overlay can show the preview + badge. */}
@@ -317,7 +405,7 @@ function EditorOverlay({
               drawing,
               snap,
               threshold: snapCfg.threshold,
-              gridStep: snapCfg.gridStep,
+              gridStep: snapCfg.minorStep,
             });
             setSnappedCursor(s);
           }}
@@ -339,7 +427,11 @@ function EditorOverlay({
             selected?.kind === "node" &&
             map.nodes.find((n) => n.id === selected.id)?.roomId === r.id;
           const highlight = isSelected || linkedNodeSelected;
-          const clickable = mode === "rooms" || tool === "delete";
+          // Rooms are clickable only with the Select tool (rename them from
+          // any mode) or the Delete tool. In drawing tools (polygon, wall,
+          // door, drawGraph) clicks pass through so the active tool can
+          // place a new vertex / segment instead of selecting the room.
+          const clickable = tool === "select" || tool === "delete";
           const willDelete = isHoverDelete({ kind: "room", id: r.id });
           return (
             <polygon
@@ -384,6 +476,31 @@ function EditorOverlay({
         })}
       </g>
 
+      {/* Room labels — code if set, otherwise English name. Centroid-placed,
+          non-interactive so they don't steal clicks from the polygon. */}
+      <g pointerEvents="none">
+        {map.rooms.map((r) => {
+          const c = roomCentroid(r.polygon);
+          const label = r.code ?? r.name.en;
+          if (!label) return null;
+          return (
+            <text
+              key={`label-${r.id}`}
+              x={c.x}
+              y={c.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={longest * 0.022}
+              fill="oklch(0.3 0.02 270)"
+              fontFamily="var(--font-sans)"
+              fontWeight={500}
+            >
+              {label}
+            </text>
+          );
+        })}
+      </g>
+
       {/* Polygon in progress */}
       {drawing.kind === "polygon" && (
         <PolygonPreview
@@ -405,7 +522,13 @@ function EditorOverlay({
               : "var(--wall-interior)";
           const thickness =
             w.kind === "exterior" ? W_EXTERIOR : w.kind === "window" ? W_WINDOW : W_INTERIOR;
-          const clickable = mode === "structure" || tool === "delete";
+          // Walls are clickable with Select (in their native Structure mode)
+          // or Delete (anywhere). Drawing tools — wall, exterior-wall,
+          // window, door — let clicks fall through to the canvas so a new
+          // wall point can be placed even when the cursor crosses an
+          // existing wall.
+          const clickable =
+            (mode === "structure" && tool === "select") || tool === "delete";
           const hitWidth = Math.max(thickness * 3, longest * 0.018);
           const willDelete = isHoverDelete({ kind: "wall", id: w.id });
           return (
@@ -466,7 +589,8 @@ function EditorOverlay({
       <g>
         {map.doors.map((d) => {
           const isSelected = selected?.kind === "door" && selected.id === d.id;
-          const clickable = mode === "structure" || tool === "delete";
+          const clickable =
+            (mode === "structure" && tool === "select") || tool === "delete";
           const visibleR = longest * 0.01;
           const hitR = longest * 0.022;
           const willDelete = isHoverDelete({ kind: "door", id: d.id });
@@ -509,58 +633,87 @@ function EditorOverlay({
         })}
       </g>
 
-      {/* Graph edges — visible thin line + invisible fat hit line. */}
-      <g>
-        {map.edges.map((e) => {
+      {/* Graph edges — visible thin line + invisible fat hit line. Edges
+          much longer than the median get a dashed amber treatment so the
+          user can spot likely force-bridge artifacts from Normalize. */}
+      {(() => {
+        const lens = map.edges.map((e) => {
           const a = map.nodes.find((n) => n.id === e.from);
           const b = map.nodes.find((n) => n.id === e.to);
-          if (!a || !b) return null;
-          const isSelected = selected?.kind === "edge" && selected.id === e.id;
-          const clickable = mode === "graph" || tool === "delete";
-          const hitWidth = Math.max(edgeWidth * 4, longest * 0.018);
-          const willDelete = isHoverDelete({ kind: "edge", id: e.id });
-          return (
-            <g key={e.id}>
-              <line
-                x1={a.position.x}
-                y1={a.position.y}
-                x2={b.position.x}
-                y2={b.position.y}
-                stroke={
-                  willDelete
-                    ? "var(--destructive)"
-                    : isSelected
-                    ? "var(--brand)"
-                    : "oklch(0.4 0.05 270)"
-                }
-                strokeWidth={willDelete ? edgeWidth * 1.6 : edgeWidth}
-                strokeLinecap="round"
-                pointerEvents="none"
-              />
-              {clickable && (
-                <line
-                  x1={a.position.x}
-                  y1={a.position.y}
-                  x2={b.position.x}
-                  y2={b.position.y}
-                  stroke="transparent"
-                  strokeWidth={hitWidth}
-                  strokeLinecap="round"
-                  pointerEvents="stroke"
-                  style={{ cursor: "pointer" }}
-                  onMouseEnter={() => enterHover({ kind: "edge", id: e.id })}
-                  onMouseLeave={() => leaveHover({ kind: "edge", id: e.id })}
-                  onMouseDown={(ev) => ev.stopPropagation()}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    onEntityClick({ kind: "edge", id: e.id });
-                  }}
-                />
-              )}
-            </g>
-          );
-        })}
-      </g>
+          if (!a || !b) return 0;
+          return Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y);
+        });
+        const sorted = [...lens].sort((x, y) => x - y);
+        const med = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+        const longThreshold = Math.max(longest * 0.15, med * 3.5);
+        return (
+          <g>
+            {map.edges.map((e, idx) => {
+              const a = map.nodes.find((n) => n.id === e.from);
+              const b = map.nodes.find((n) => n.id === e.to);
+              if (!a || !b) return null;
+              const isSelected = selected?.kind === "edge" && selected.id === e.id;
+              const clickable =
+                (mode === "graph" && tool === "select") || tool === "delete";
+              const hitWidth = Math.max(edgeWidth * 4, longest * 0.018);
+              const willDelete = isHoverDelete({ kind: "edge", id: e.id });
+              const isSuspicious =
+                mode === "graph" && lens.length > 3 && lens[idx] > longThreshold;
+              return (
+                <g key={e.id}>
+                  <line
+                    x1={a.position.x}
+                    y1={a.position.y}
+                    x2={b.position.x}
+                    y2={b.position.y}
+                    stroke={
+                      willDelete
+                        ? "var(--destructive)"
+                        : isSelected
+                        ? "var(--brand)"
+                        : isSuspicious
+                        ? "oklch(0.7 0.18 60)"
+                        : "oklch(0.4 0.05 270)"
+                    }
+                    strokeWidth={
+                      willDelete
+                        ? edgeWidth * 1.6
+                        : isSuspicious
+                        ? edgeWidth * 1.2
+                        : edgeWidth
+                    }
+                    strokeDasharray={
+                      isSuspicious ? `${longest * 0.01} ${longest * 0.006}` : undefined
+                    }
+                    strokeLinecap="round"
+                    pointerEvents="none"
+                  />
+                  {clickable && (
+                    <line
+                      x1={a.position.x}
+                      y1={a.position.y}
+                      x2={b.position.x}
+                      y2={b.position.y}
+                      stroke="transparent"
+                      strokeWidth={hitWidth}
+                      strokeLinecap="round"
+                      pointerEvents="stroke"
+                      style={{ cursor: "pointer" }}
+                      onMouseEnter={() => enterHover({ kind: "edge", id: e.id })}
+                      onMouseLeave={() => leaveHover({ kind: "edge", id: e.id })}
+                      onMouseDown={(ev) => ev.stopPropagation()}
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        onEntityClick({ kind: "edge", id: e.id });
+                      }}
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        );
+      })()}
 
       {/* Graph polyline in progress */}
       {drawing.kind === "graphLine" && (
@@ -589,6 +742,20 @@ function EditorOverlay({
             linkedRoomSelected ? "var(--brand-strong)" : "white";
           const ringStrokeWidth =
             linkedRoomSelected ? nodeRadius * 0.5 : nodeRadius * 0.25;
+          // Cross-floor link indicator: outer teal ring + level badge above
+          // the node when this node points to a node on another floor.
+          const xfLink = n.connectsToFloor;
+          const xfTargetFloor = xfLink
+            ? siblingFloors.find((f) => f.slug === xfLink.floorSlug)
+            : null;
+          const xfTargetNode =
+            xfLink && xfTargetFloor
+              ? xfTargetFloor.nodes.find((nn) => nn.id === xfLink.nodeId)
+              : null;
+          // Reciprocal? The target node should point back at this node.
+          const xfReciprocal =
+            xfTargetNode?.connectsToFloor?.floorSlug === map.floorSlug &&
+            xfTargetNode?.connectsToFloor?.nodeId === n.id;
           return (
             <g key={n.id}>
               <DraggableNode
@@ -609,18 +776,30 @@ function EditorOverlay({
                 draggable={mode === "graph" && tool === "select"}
                 onPositionChange={(pos) => onNodeDrag(n.id, pos)}
                 onClick={() => {
-                  if (mode === "graph" || tool === "delete")
-                    onEntityClick({ kind: "node", id: n.id });
+                  // Clickable in: graph+select (drag/select), graph+drawGraph
+                  // (extend polyline from this node), and delete tool
+                  // anywhere. Other tools let clicks fall through so they
+                  // can place new things over a node's location.
+                  const clickable =
+                    (mode === "graph" &&
+                      (tool === "select" || tool === "drawGraph")) ||
+                    tool === "delete";
+                  if (clickable) onEntityClick({ kind: "node", id: n.id });
                 }}
-                onEnter={() =>
-                  (mode === "graph" || tool === "delete") &&
-                  enterHover({ kind: "node", id: n.id })
-                }
+                onEnter={() => {
+                  const clickable =
+                    (mode === "graph" &&
+                      (tool === "select" || tool === "drawGraph")) ||
+                    tool === "delete";
+                  if (clickable) enterHover({ kind: "node", id: n.id });
+                }}
                 onLeave={() => leaveHover({ kind: "node", id: n.id })}
                 cursor={
                   mode === "graph" && tool === "select"
                     ? "grab"
-                    : mode === "graph" || tool === "delete"
+                    : (mode === "graph" &&
+                        (tool === "select" || tool === "drawGraph")) ||
+                      tool === "delete"
                     ? "pointer"
                     : "default"
                 }
@@ -641,6 +820,57 @@ function EditorOverlay({
                 >
                   {room.code ?? room.name.en}
                 </text>
+              )}
+              {/* Cross-floor link: dashed teal outer ring + a level badge
+                  floating above-right. Badge tints amber for one-way links
+                  so the user can spot dangling cross-floor pointers. */}
+              {xfLink && xfTargetFloor && (
+                <g pointerEvents="none">
+                  <circle
+                    cx={n.position.x}
+                    cy={n.position.y}
+                    r={nodeRadius * 1.9}
+                    fill="none"
+                    stroke={
+                      xfReciprocal
+                        ? "var(--feature)"
+                        : "oklch(0.7 0.18 60)"
+                    }
+                    strokeWidth={1.5}
+                    strokeDasharray="4 3"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <g
+                    transform={`translate(${n.position.x + nodeRadius * 1.6}, ${
+                      n.position.y - nodeRadius * 1.6
+                    })`}
+                  >
+                    <rect
+                      x={-nodeRadius * 0.9}
+                      y={-nodeRadius * 0.9}
+                      width={nodeRadius * 2.2}
+                      height={nodeRadius * 1.4}
+                      rx={nodeRadius * 0.4}
+                      fill={
+                        xfReciprocal
+                          ? "var(--feature)"
+                          : "oklch(0.7 0.18 60)"
+                      }
+                    />
+                    <text
+                      x={0}
+                      y={0}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={longest * 0.018}
+                      fill="white"
+                      fontFamily="var(--font-sans)"
+                      fontWeight={700}
+                    >
+                      ↕L{xfTargetFloor.level}
+                    </text>
+                  </g>
+                </g>
               )}
             </g>
           );
@@ -928,44 +1158,122 @@ function SnapIndicator({
 // Grid + draggable node (unchanged)
 // ---------------------------------------------------------------------------
 
+function roomCentroid(points: Point[]): Point {
+  if (points.length === 0) return { x: 0, y: 0 };
+  let x = 0;
+  let y = 0;
+  for (const p of points) {
+    x += p.x;
+    y += p.y;
+  }
+  return { x: x / points.length, y: y / points.length };
+}
+
 function Grid({
   bounds,
   step,
+  subdivisions,
   longest,
 }: {
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
   step: number;
+  subdivisions: number;
   longest: number;
 }) {
+  // Soft cap: with very small step + very wide bounds we could end up
+  // emitting millions of <line>s. Bail out of minor lines (keep majors)
+  // when the count would blow past a sensible budget.
+  const subs = Math.max(1, Math.min(20, subdivisions));
+  const minor = step / subs;
+  const wRange = bounds.maxX - bounds.minX;
+  const hRange = bounds.maxY - bounds.minY;
+  const totalMinor = (wRange / minor) + (hRange / minor);
+  const renderMinor = subs > 1 && totalMinor <= 2000;
+
+  // Constant in screen pixels via vector-effect on the group below — so
+  // gridlines don't fatten as the user zooms into the SVG. Kept hair-thin
+  // so they read as a guide, not a primary visual.
+  const minorStrokeW = 0.25;
+  const majorStrokeW = 0.5;
+  const minorStroke = "oklch(0.94 0.003 270)";
+  const majorStroke = "oklch(0.86 0.008 270)";
+
   const lines: React.ReactNode[] = [];
-  const strokeW = longest * 0.001;
-  for (let x = Math.ceil(bounds.minX / step) * step; x <= bounds.maxX; x += step) {
+
+  if (renderMinor) {
+    // Vertical minor lines.
+    const startMinor = Math.ceil(bounds.minX / minor) * minor;
+    for (let x = startMinor; x <= bounds.maxX + 1e-9; x += minor) {
+      // Skip positions that coincide with a major line — we'll draw those
+      // on top with a heavier stroke.
+      const onMajor = Math.abs(x / step - Math.round(x / step)) < 1e-6;
+      if (onMajor) continue;
+      lines.push(
+        <line
+          key={`vmx-${x.toFixed(4)}`}
+          x1={x}
+          y1={bounds.minY}
+          x2={x}
+          y2={bounds.maxY}
+          stroke={minorStroke}
+          strokeWidth={minorStrokeW}
+          vectorEffect="non-scaling-stroke"
+        />,
+      );
+    }
+    const startMinorY = Math.ceil(bounds.minY / minor) * minor;
+    for (let y = startMinorY; y <= bounds.maxY + 1e-9; y += minor) {
+      const onMajor = Math.abs(y / step - Math.round(y / step)) < 1e-6;
+      if (onMajor) continue;
+      lines.push(
+        <line
+          key={`hmy-${y.toFixed(4)}`}
+          x1={bounds.minX}
+          y1={y}
+          x2={bounds.maxX}
+          y2={y}
+          stroke={minorStroke}
+          strokeWidth={minorStrokeW}
+          vectorEffect="non-scaling-stroke"
+        />,
+      );
+    }
+  }
+
+  // Major lines.
+  for (let x = Math.ceil(bounds.minX / step) * step; x <= bounds.maxX + 1e-9; x += step) {
     lines.push(
       <line
-        key={`vx-${x}`}
+        key={`vx-${x.toFixed(4)}`}
         x1={x}
         y1={bounds.minY}
         x2={x}
         y2={bounds.maxY}
-        stroke="oklch(0.85 0.01 270)"
-        strokeWidth={strokeW}
+        stroke={majorStroke}
+        strokeWidth={majorStrokeW}
+        vectorEffect="non-scaling-stroke"
       />,
     );
   }
-  for (let y = Math.ceil(bounds.minY / step) * step; y <= bounds.maxY; y += step) {
+  for (let y = Math.ceil(bounds.minY / step) * step; y <= bounds.maxY + 1e-9; y += step) {
     lines.push(
       <line
-        key={`hy-${y}`}
+        key={`hy-${y.toFixed(4)}`}
         x1={bounds.minX}
         y1={y}
         x2={bounds.maxX}
         y2={y}
-        stroke="oklch(0.85 0.01 270)"
-        strokeWidth={strokeW}
+        stroke={majorStroke}
+        strokeWidth={majorStrokeW}
+        vectorEffect="non-scaling-stroke"
       />,
     );
   }
-  return <g pointerEvents="none">{lines}</g>;
+  return (
+    <g pointerEvents="none">
+      {lines}
+    </g>
+  );
 }
 
 function DraggableNode({

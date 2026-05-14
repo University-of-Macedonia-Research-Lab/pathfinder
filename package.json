@@ -15,6 +15,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",
     "@auth/prisma-adapter": "^2.7.4",
+    "@aws-sdk/client-s3": "^3.1046.0",
+    "@aws-sdk/s3-request-presigner": "^3.1046.0",
     "@base-ui/react": "^1.4.1",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",

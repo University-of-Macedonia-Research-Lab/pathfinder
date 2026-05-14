@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 import { saveFloorData } from "@/app/dashboard/actions";
 import type {
   Door,
@@ -18,8 +20,17 @@ import { cn } from "@/lib/utils";
 import { ToolPalette, type Mode, type Tool } from "./tool-palette";
 import { EditorSidebar } from "./editor-sidebar";
 import { SnapToolbar } from "./snap-toolbar";
-import { DEFAULT_SNAP, type Drawing, type Selected, type SnapState } from "./types";
+import { FloorSwitcher } from "./floor-switcher";
+import {
+  DEFAULT_SNAP,
+  type Drawing,
+  type Selected,
+  type SiblingFloor,
+  type SnapState,
+} from "./types";
 import { findContainingRoomId } from "@/lib/map/geometry";
+import { connectedComponents, normalizeGraph } from "@/lib/map/graph";
+import { autoLinkCrossFloor } from "@/lib/map/cross-floor";
 
 const EditorCanvas = dynamic(
   () => import("./editor-canvas").then((m) => m.EditorCanvas),
@@ -34,13 +45,26 @@ const EditorCanvas = dynamic(
 );
 
 type Props = {
+  buildingId: string;
+  buildingName: string;
   floorId: string;
   initial: FloorMap;
+  siblingFloors: SiblingFloor[];
+  /** Slim metadata for every floor in this building, used by the in-studio
+   *  floor switcher. Includes the current floor. */
+  floorList: { id: string; slug: string; level: number; nameEn: string }[];
 };
 
 const id = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 
-export function FloorEditor({ floorId, initial }: Props) {
+export function FloorEditor({
+  buildingId,
+  buildingName,
+  floorId,
+  initial,
+  siblingFloors,
+  floorList,
+}: Props) {
   const [floor, setFloor] = useState<FloorMap>(initial);
   const [mode, setMode] = useState<Mode>("structure");
   const [tool, setTool] = useState<Tool>("select");
@@ -176,6 +200,93 @@ export function FloorEditor({ floorId, initial }: Props) {
     },
     [tool, drawing, floor.nodes],
   );
+
+  // Normalize the graph: collapse near-duplicate nodes and bridge close-
+  // but-disconnected components. Defaults are tuned to the floor's size —
+  // merge threshold is small (basically duplicates) and bridge threshold
+  // is 3% of the longest bound side.
+  const normalize = useCallback(() => {
+    setFloor((f) => {
+      const longest = Math.max(
+        f.bounds.maxX - f.bounds.minX,
+        f.bounds.maxY - f.bounds.minY,
+      );
+      const merge = 0.5;
+      const bridge = Math.max(2, longest * 0.03);
+      // connectAll forces a single connected graph by adding the minimum-
+      // distance edge between any two disconnected components, repeating
+      // until everything is one component. That's the user's intent when
+      // they hit "Normalize" — they want one routable graph.
+      const result = normalizeGraph(f, merge, bridge, { connectAll: true });
+      if (
+        result.mergedNodes === 0 &&
+        result.splitEdges === 0 &&
+        result.bridgesAdded === 0 &&
+        result.forcedBridges === 0
+      ) {
+        toast.info("Graph is already one component.");
+        return f;
+      }
+      const bits: string[] = [];
+      if (result.mergedNodes > 0)
+        bits.push(`merged ${result.mergedNodes} duplicate node${result.mergedNodes === 1 ? "" : "s"}`);
+      if (result.splitEdges > 0)
+        bits.push(`split ${result.splitEdges} edge${result.splitEdges === 1 ? "" : "s"} through intermediate nodes`);
+      if (result.bridgesAdded > 0)
+        bits.push(`bridged ${result.bridgesAdded} close component${result.bridgesAdded === 1 ? "" : "s"}`);
+      if (result.forcedBridges > 0)
+        bits.push(`force-linked ${result.forcedBridges} distant component${result.forcedBridges === 1 ? "" : "s"}`);
+      bits.push(
+        `${result.componentsBefore} → ${result.componentsAfter} component${result.componentsAfter === 1 ? "" : "s"}`,
+      );
+      toast.success(`Normalized: ${bits.join(" · ")}`);
+      return result.map;
+    });
+  }, []);
+
+  // Auto-link elevator_shaft / stairwell rooms to their counterparts on
+  // sibling floors — sets connectsToFloor + features on the in-room node.
+  // One-sided: needs to be run on each floor for bidirectional traversal.
+  const autoLinkFloors = useCallback(() => {
+    setFloor((f) => {
+      const result = autoLinkCrossFloor(f, siblingFloors);
+      if (
+        result.linksAdded === 0 &&
+        result.linksAlreadyPresent === 0 &&
+        result.skipped.length === 0
+      ) {
+        toast.info(
+          "No stairwell or elevator_shaft rooms on this floor to link.",
+        );
+        return f;
+      }
+      if (
+        result.linksAdded === 0 &&
+        result.linksAlreadyPresent > 0 &&
+        result.skipped.length === 0
+      ) {
+        toast.info("Cross-floor links are already in place.");
+        return f;
+      }
+      const bits: string[] = [];
+      if (result.linksAdded > 0)
+        bits.push(`Linked ${result.linksAdded} node${result.linksAdded === 1 ? "" : "s"}`);
+      if (result.linksAlreadyPresent > 0)
+        bits.push(`${result.linksAlreadyPresent} already linked`);
+      if (result.skipped.length > 0)
+        bits.push(`${result.skipped.length} skipped`);
+      const note =
+        result.skipped.length > 0
+          ? ` First skip: ${result.skipped[0].roomLabel} — ${result.skipped[0].reason}.`
+          : "";
+      const reminder =
+        result.linksAdded > 0
+          ? " Re-run on the other floor for bidirectional traversal."
+          : "";
+      toast.success(`${bits.join(" · ")}.${reminder}${note}`);
+      return result.map;
+    });
+  }, [siblingFloors]);
 
   // Auto-assign every node to whichever room polygon contains its position.
   // Nodes outside any room (corridors, lobbies) are left untouched. Idempotent.
@@ -388,6 +499,7 @@ export function FloorEditor({ floorId, initial }: Props) {
       doors: floor.doors.length,
       nodes: floor.nodes.length,
       edges: floor.edges.length,
+      components: connectedComponents(floor.nodes, floor.edges).length,
     }),
     [floor],
   );
@@ -408,18 +520,56 @@ export function FloorEditor({ floorId, initial }: Props) {
   }, [drawing]);
 
   return (
-    <>
-      <ToolPalette
-        mode={mode}
-        tool={tool}
-        onModeChange={changeMode}
-        onToolChange={changeTool}
-      />
+    <div className="flex h-full flex-col">
+      {/* Studio header — replaces the slim breadcrumb that used to live in
+          the server page. Holds the back arrow, the building name, and an
+          in-studio floor switcher so the user can hop floors without
+          leaving the editor. The switcher reads `dirty` from this scope
+          and prompts before discarding work. */}
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-4 py-2">
+        <div className="flex min-w-0 items-center gap-2 text-caption">
+          <Link
+            href="/dashboard"
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="All buildings"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/dashboard/buildings/${buildingId}`}
+            className="truncate hover:text-foreground"
+          >
+            {buildingName}
+          </Link>
+          <span className="text-muted-foreground">/</span>
+          <FloorSwitcher
+            buildingId={buildingId}
+            currentFloorId={floorId}
+            floors={floorList}
+            dirty={dirty}
+          />
+        </div>
+      </header>
+      <div className="flex min-h-0 flex-1">
+        <ToolPalette
+          mode={mode}
+          tool={tool}
+          onModeChange={changeMode}
+          onToolChange={changeTool}
+        />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-border bg-card px-4 py-2">
           <div className="text-caption">
             {stats.rooms} rooms · {stats.walls} walls · {stats.doors} doors ·{" "}
             <b>{stats.nodes} nodes</b> · <b>{stats.edges} edges</b>
+            {stats.nodes > 0 && stats.components > 1 && (
+              <span
+                className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+                title="The graph is split into multiple disconnected components — routes between them will fail."
+              >
+                {stats.components} disconnected components
+              </span>
+            )}
             {drawingHint && (
               <span className="ml-3 text-[var(--brand)]">{drawingHint}</span>
             )}
@@ -433,6 +583,22 @@ export function FloorEditor({ floorId, initial }: Props) {
               title="Assign every node to the room polygon containing it"
             >
               Auto-assign rooms
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={autoLinkFloors}
+              title="Wire stairwell / elevator_shaft rooms to their counterparts on other floors (match by code)"
+            >
+              Link stairs / elevators
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={normalize}
+              title="Merge duplicate nodes and bridge close-but-disconnected components into a single graph"
+            >
+              Normalize
             </Button>
             <span
               className={cn(
@@ -455,6 +621,7 @@ export function FloorEditor({ floorId, initial }: Props) {
             drawing={drawing}
             selected={selected}
             snap={snap}
+            siblingFloors={siblingFloors}
             onCanvasClick={handleCanvasClick}
             onEntityClick={handleEntityClick}
             onCommitDrawing={commitActive}
@@ -465,6 +632,8 @@ export function FloorEditor({ floorId, initial }: Props) {
       <EditorSidebar
         mode={mode}
         floor={floor}
+        floorId={floorId}
+        siblingFloors={siblingFloors}
         selected={selected}
         onSelect={setSelected}
         onUpdateNode={(id, patch) =>
@@ -498,7 +667,14 @@ export function FloorEditor({ floorId, initial }: Props) {
           }))
         }
         onUpdateBounds={(bounds) => setFloor((f) => ({ ...f, bounds }))}
+        onUpdateGrid={(grid) =>
+          setFloor((f) => ({ ...f, grid: grid ?? undefined }))
+        }
+        onUpdateBackground={(background) =>
+          setFloor((f) => ({ ...f, background: background ?? undefined }))
+        }
       />
-    </>
+      </div>
+    </div>
   );
 }

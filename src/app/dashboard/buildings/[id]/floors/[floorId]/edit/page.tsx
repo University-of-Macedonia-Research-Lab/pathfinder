@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth-helpers";
@@ -18,22 +17,54 @@ export default async function FloorEditPage(
 
   const initial = parseFloorMap(JSON.parse(floor.data));
 
+  // Load every floor of this building once. The editor needs:
+  //  - the current floor's geometry (parsed above)
+  //  - a slim sibling list for cross-floor link picking
+  //  - a flat list for the in-studio floor switcher
+  const buildingFloors = await prisma.floor.findMany({
+    where: { buildingId: id },
+    orderBy: { level: "asc" },
+    select: { id: true, slug: true, level: true, nameEn: true, data: true },
+  });
+
+  const floorList = buildingFloors.map((f) => ({
+    id: f.id,
+    slug: f.slug,
+    level: f.level,
+    nameEn: f.nameEn,
+  }));
+
+  const siblingFloors = buildingFloors
+    .filter((s) => s.id !== floor.id)
+    .map((s) => {
+      const parsed = parseFloorMap(JSON.parse(s.data));
+      return {
+        slug: s.slug,
+        level: s.level,
+        nameEn: s.nameEn,
+        nodes: parsed.nodes.map((n) => ({
+          id: n.id,
+          position: n.position,
+          roomId: n.roomId,
+          connectsToFloor: n.connectsToFloor,
+        })),
+        rooms: parsed.rooms.map((r) => ({
+          id: r.id,
+          code: r.code,
+          nameEn: r.name.en,
+          kind: r.kind,
+        })),
+      };
+    });
+
   return (
-    <div className="-mx-6 -my-8 flex h-[calc(100dvh-65px)] flex-col">
-      <header className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
-        <div className="flex items-center gap-3 text-caption">
-          <Link href={`/dashboard/buildings/${floor.building.id}`}>
-            ← {floor.building.nameEn}
-          </Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">
-            Level {floor.level} · {floor.nameEn}
-          </span>
-        </div>
-      </header>
-      <div className="flex min-h-0 flex-1">
-        <FloorEditor floorId={floor.id} initial={initial} />
-      </div>
-    </div>
+    <FloorEditor
+      buildingId={floor.building.id}
+      buildingName={floor.building.nameEn}
+      floorId={floor.id}
+      initial={initial}
+      siblingFloors={siblingFloors}
+      floorList={floorList}
+    />
   );
 }

@@ -113,6 +113,30 @@ export const GraphEdge = z.object({
 });
 export type GraphEdge = z.infer<typeof GraphEdge>;
 
+/** Editor-only display settings persisted on the floor so they survive a
+ *  reload. `step` is in floor units and also drives grid snap; subdivisions
+ *  controls how many minor lines render between each major gridline. */
+export const Grid = z.object({
+  step: z.number().positive(),
+  subdivisions: z.number().int().min(1).max(20).default(4),
+});
+export type Grid = z.infer<typeof Grid>;
+
+/** Optional bitmap background to trace over (a scanned floor plan, CAD
+ *  export, photo of a hand drawing). `url` is a URL to the asset — either
+ *  a regular http(s) URL, or our own /api/assets/[id] route that streams
+ *  bytes out of FloorAsset. Stored separately from the JSON so the save
+ *  action body stays small. */
+export const Background = z.object({
+  url: z.string(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+  opacity: z.number().min(0).max(1).default(0.5),
+});
+export type Background = z.infer<typeof Background>;
+
 export const FloorMap = z.object({
   schemaVersion: z.literal(1),
   buildingSlug: z.string(),
@@ -126,6 +150,10 @@ export const FloorMap = z.object({
     maxX: z.number(),
     maxY: z.number(),
   }),
+  /** Editor display settings. Optional for backwards compat with floors
+   *  authored before these fields existed. */
+  grid: Grid.optional(),
+  background: Background.optional(),
   /** Optional polygon describing the building's exterior boundary on this
    *  floor. When present, it's drawn as a filled "floor base" with a thick
    *  exterior wall stroke around its edges. */
