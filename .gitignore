@@ -1,1 +1,28 @@
-data
+node_modules
+.next
+out
+build
+dist
+
+# env
+.env
+.env.local
+.env.*.local
+
+# prisma
+prisma/dev.db
+prisma/dev.db-journal
+# Prisma client is generated at install time via `prisma generate`
+src/generated/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.log
+.vscode
+.idea
+
+# Next.js types
+next-env.d.ts
