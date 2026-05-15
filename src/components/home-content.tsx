@@ -30,45 +30,131 @@ import { LanguageToggle } from "@/components/language-toggle";
 
 export function HomeContent({ isAuthed }: { isAuthed: boolean }) {
   return (
-    <div className="relative min-h-dvh bg-[var(--background)] text-[color:var(--foreground)]">
+    <div className="relative isolate min-h-dvh bg-[var(--background)] text-[color:var(--foreground)]">
       <Backdrop />
       <Header isAuthed={isAuthed} />
-      {/* Top padding accounts for the sticky header (h-16 on every breakpoint). */}
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-28 px-5 pb-24 pt-8 sm:gap-36 sm:px-8 sm:pb-32 sm:pt-16">
-        <Hero isAuthed={isAuthed} />
-        <HowItWorks />
-        <Showcase />
-        <TrustStrip />
-        <Audience />
-        <ClosingCta isAuthed={isAuthed} />
+      {/* Each section lives in a SectionShell that gives it a generous
+          minimum height and vertically-centers its content — the hero
+          fills the viewport, the rest get room to breathe. */}
+      <main className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-16 px-5 pb-24 sm:gap-24 sm:px-8">
+        <SectionShell variant="hero">
+          <Hero isAuthed={isAuthed} />
+        </SectionShell>
+        <SectionShell>
+          <HowItWorks />
+        </SectionShell>
+        <SectionShell>
+          <Showcase />
+        </SectionShell>
+        <SectionShell>
+          <ClosingCta isAuthed={isAuthed} />
+        </SectionShell>
       </main>
       <Footer />
     </div>
   );
 }
 
+/** Vertically-centering wrapper that gives every homepage section a
+ *  consistent minimum height. The `hero` variant fills the viewport
+ *  exactly (minus the 4rem sticky header); the default variant gives
+ *  shorter sections enough room that they never feel cramped. */
+function SectionShell({
+  children,
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  variant?: "hero" | "default";
+}) {
+  return (
+    <div
+      className={
+        "flex w-full flex-col items-center justify-center " +
+        (variant === "hero"
+          ? "min-h-[calc(100dvh-4rem)]"
+          : "min-h-[72vh]")
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
 /* ─── Backdrop ───────────────────────────────────────────────────────────── */
 //
-// Soft ambient light at the top of the page — feels like a spotlight from
-// above the viewport. Two stacked radial gradients (a wide soft halo plus a
-// smaller, more saturated core) plus a faint dot grid for texture. The
-// blurred elements are positioned outside the visible area so the edges
-// fade naturally without hard banding.
+// Full-bleed ambient background: a heavily-blurred neon ring (conic gradient
+// masked into a band), a bright core haze, and two drifting blobs — all
+// spanning the full viewport width since the Backdrop lives at the page
+// root, outside the max-width content column. A faint dot grid sits on top
+// for texture. Everything is decorative and motion-disabled under
+// prefers-reduced-motion.
 
 function Backdrop() {
   return (
     <>
+      {/* Neon glow zone — concentrated behind the hero, full screen wide. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[110vh]"
-        style={{
-          background: `
-            radial-gradient(ellipse 1100px 620px at 50% -180px, var(--brand-soft) 0%, transparent 60%),
-            radial-gradient(ellipse 620px 340px at 50% -40px, oklch(0.82 0.16 285 / 0.4) 0%, transparent 70%),
-            radial-gradient(ellipse 380px 220px at 50% 60px, oklch(0.92 0.10 285 / 0.55) 0%, transparent 75%)
-          `,
-        }}
-      />
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[135vh] overflow-hidden"
+      >
+        {/* Wide soft wash */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 100% 58% at 50% 2%, var(--brand-soft) 0%, transparent 72%)",
+          }}
+        />
+        {/* The neon ring — conic gradient masked into a wide band, then
+            heavily blurred so it reads as a smooth wash of light rather
+            than a defined circle. Wide band + big blur = soft + seamless. */}
+        <div className="absolute left-1/2 top-[34vh] -translate-x-1/2 -translate-y-1/2">
+          <div
+            className="pathfinder-spin aspect-square w-[90rem] max-w-[210vw] rounded-full opacity-80"
+            style={{
+              background:
+                "conic-gradient(from 120deg, oklch(0.93 0.05 285), oklch(0.94 0.045 215), oklch(0.93 0.05 330), oklch(0.94 0.045 255), oklch(0.93 0.05 285))",
+              maskImage:
+                "radial-gradient(closest-side, transparent 42%, #000 62%, #000 80%, transparent 100%)",
+              WebkitMaskImage:
+                "radial-gradient(closest-side, transparent 42%, #000 62%, #000 80%, transparent 100%)",
+              filter: "blur(160px)",
+            }}
+          />
+        </div>
+        {/* Bright core haze inside the ring — nearly white. */}
+        <div
+          className="absolute left-1/2 top-[26vh] h-[32rem] w-[60rem] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, oklch(0.97 0.025 285 / 0.85), transparent 72%)",
+            filter: "blur(120px)",
+          }}
+        />
+        {/* Drifting flank blobs for asymmetry + depth — soft, near-white. */}
+        <div
+          className="pathfinder-drift-a absolute h-[32rem] w-[32rem] rounded-full opacity-60"
+          style={{
+            left: "-10rem",
+            top: "2vh",
+            background:
+              "radial-gradient(circle at center, oklch(0.94 0.05 285 / 0.6), transparent 66%)",
+            filter: "blur(90px)",
+          }}
+        />
+        <div
+          className="pathfinder-drift-b absolute h-[28rem] w-[28rem] rounded-full opacity-55"
+          style={{
+            right: "-8rem",
+            top: "14vh",
+            background:
+              "radial-gradient(circle at center, oklch(0.95 0.045 215 / 0.6), transparent 66%)",
+            filter: "blur(90px)",
+          }}
+        />
+      </div>
+
+      {/* Dot grid texture, full page. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
@@ -79,6 +165,38 @@ function Backdrop() {
           opacity: 0.025,
         }}
       />
+
+      <style jsx>{`
+        :global(.pathfinder-spin) {
+          animation: pf-spin 44s linear infinite;
+        }
+        :global(.pathfinder-drift-a) {
+          animation: pf-drift-a 17s ease-in-out infinite;
+        }
+        :global(.pathfinder-drift-b) {
+          animation: pf-drift-b 19s ease-in-out infinite;
+        }
+        @keyframes pf-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes pf-drift-a {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(2.5rem, 2rem); }
+        }
+        @keyframes pf-drift-b {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-2rem, 2.5rem); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          :global(.pathfinder-spin),
+          :global(.pathfinder-drift-a),
+          :global(.pathfinder-drift-b) {
+            animation: none;
+          }
+        }
+      `}</style>
     </>
   );
 }
@@ -94,30 +212,40 @@ function Header({ isAuthed }: { isAuthed: boolean }) {
       // keeps the fallback usable on browsers without the filter.
       className="sticky top-0 z-30 w-full border-b border-transparent backdrop-blur-md transition-[background-color,border-color] supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--background),transparent_30%)]"
     >
-      <div className="flex h-16 w-full items-center justify-between gap-4 px-6 sm:px-10 lg:px-14">
+      <div className="flex h-16 w-full items-center justify-between gap-2 px-4 sm:gap-4 sm:px-10 lg:px-14">
         <Link
           href="/"
           aria-label="Pathfinder home"
-          className="flex items-center"
+          className="flex shrink-0 items-center"
         >
+          {/* Compact favicon mark on phones, full wordmark on sm+ — the
+              218px-wide wordmark would crowd the header on small screens. */}
+          <Image
+            src="/favicon.png"
+            alt="Pathfinder"
+            width={70}
+            height={70}
+            priority
+            className="h-7 w-7 sm:hidden"
+          />
           <Image
             src="/logo-light.svg"
             alt="Pathfinder"
             width={408}
             height={45}
             priority
-            className="h-6 w-auto dark:invert sm:h-7"
+            className="hidden h-7 w-auto dark:invert sm:block"
           />
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5 sm:gap-1">
           <ThemeToggle />
           <LanguageToggle />
           <Link
             href={isAuthed ? "/dashboard" : "/signin"}
-            className="ml-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--foreground)] px-4 py-1.5 text-sm font-medium text-[color:var(--background)] hover:opacity-90"
+            className="ml-1 inline-flex items-center gap-1.5 rounded-full bg-[var(--foreground)] px-3.5 py-1.5 text-sm font-medium text-[color:var(--background)] hover:opacity-90 sm:ml-2 sm:px-4"
           >
             {isAuthed ? "Dashboard" : "Sign in"}
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="hidden h-3.5 w-3.5 sm:inline-block" />
           </Link>
         </nav>
       </div>
@@ -132,7 +260,8 @@ function Hero({ isAuthed }: { isAuthed: boolean }) {
   const t = heroCopy(lang);
   return (
     <section className="relative flex w-full flex-col items-center gap-10 text-center sm:gap-12">
-      <HeroGlow />
+      <AnimatedPathDemo />
+
       <div className="relative flex flex-col items-center gap-6">
         <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
           {t.headline}
@@ -157,73 +286,7 @@ function Hero({ isAuthed }: { isAuthed: boolean }) {
           {t.ctaTour}
         </a>
       </div>
-
-      <AnimatedPathDemo />
     </section>
-  );
-}
-
-/** Soft, asymmetric ambient lights behind the hero content. Three blurred
- *  blobs — brand-violet on the left, cyan-leaning accent on the right, and
- *  a wide warm wash underneath — drift slowly with `pf-drift` so the page
- *  feels alive without ever being distracting. */
-function HeroGlow() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-    >
-      <span
-        className="pathfinder-drift-a absolute h-[28rem] w-[28rem] rounded-full opacity-60 mix-blend-multiply blur-3xl dark:mix-blend-screen sm:h-[36rem] sm:w-[36rem]"
-        style={{
-          left: "max(-12rem, -25%)",
-          top: "-8rem",
-          background:
-            "radial-gradient(circle at center, oklch(0.78 0.18 285 / 0.55), transparent 65%)",
-        }}
-      />
-      <span
-        className="pathfinder-drift-b absolute h-[24rem] w-[24rem] rounded-full opacity-55 mix-blend-multiply blur-3xl dark:mix-blend-screen sm:h-[32rem] sm:w-[32rem]"
-        style={{
-          right: "max(-10rem, -20%)",
-          top: "4rem",
-          background:
-            "radial-gradient(circle at center, oklch(0.82 0.15 215 / 0.55), transparent 65%)",
-        }}
-      />
-      <span
-        className="absolute h-[22rem] w-[42rem] rounded-full opacity-50 blur-3xl"
-        style={{
-          left: "50%",
-          top: "12rem",
-          transform: "translateX(-50%)",
-          background:
-            "radial-gradient(ellipse at center, oklch(0.94 0.08 80 / 0.55), transparent 70%)",
-        }}
-      />
-      <style jsx>{`
-        :global(.pathfinder-drift-a) {
-          animation: pf-drift-a 14s ease-in-out infinite;
-        }
-        :global(.pathfinder-drift-b) {
-          animation: pf-drift-b 16s ease-in-out infinite;
-        }
-        @keyframes pf-drift-a {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(2rem, 1.5rem); }
-        }
-        @keyframes pf-drift-b {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(-1.5rem, 2rem); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          :global(.pathfinder-drift-a),
-          :global(.pathfinder-drift-b) {
-            animation: none;
-          }
-        }
-      `}</style>
-    </div>
   );
 }
 
@@ -250,7 +313,7 @@ function heroCopy(lang: Lang) {
  *  whole pitch — "indoor wayfinding" — visualised in 8 seconds, repeatedly. */
 function AnimatedPathDemo() {
   return (
-    <div className="relative w-full max-w-2xl">
+    <div className="relative w-full max-w-[29.4rem]">
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--background)] shadow-[var(--shadow-card)]">
         <div className="flex items-center gap-1.5 border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
           <span className="h-2.5 w-2.5 rounded-full bg-[oklch(0.78_0.13_27)]" />
@@ -284,7 +347,7 @@ function AnimatedPathDemo() {
                 y1={0}
                 x2={i * 25}
                 y2={450}
-                stroke="oklch(0.92 0.005 270)"
+                stroke="oklch(0.86 0.008 270)"
                 strokeWidth="0.5"
               />
             ))}
@@ -295,7 +358,7 @@ function AnimatedPathDemo() {
                 y1={i * 25}
                 x2={800}
                 y2={i * 25}
-                stroke="oklch(0.92 0.005 270)"
+                stroke="oklch(0.86 0.008 270)"
                 strokeWidth="0.5"
               />
             ))}
@@ -539,10 +602,10 @@ function ArtTrace() {
     <svg viewBox="0 0 300 180" className="h-full w-full" preserveAspectRatio="xMidYMid meet">
       {/* Grid */}
       {Array.from({ length: 13 }).map((_, i) => (
-        <line key={`tx${i}`} x1={i * 25} y1={0} x2={i * 25} y2={180} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+        <line key={`tx${i}`} x1={i * 25} y1={0} x2={i * 25} y2={180} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
       ))}
       {Array.from({ length: 8 }).map((_, i) => (
-        <line key={`ty${i}`} x1={0} y1={i * 25} x2={300} y2={i * 25} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+        <line key={`ty${i}`} x1={0} y1={i * 25} x2={300} y2={i * 25} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
       ))}
       {/* Faint background scan */}
       <rect x="30" y="30" width="120" height="60" fill="none" stroke="oklch(0.85 0.01 270)" strokeWidth="1" opacity="0.5" />
@@ -719,6 +782,9 @@ function Showcase() {
         }
         Visual={VisualEditor}
       />
+
+      {/* Trust signals live at the foot of the capabilities section. */}
+      <TrustStrip />
     </section>
   );
 }
@@ -785,10 +851,10 @@ function VisualRouting() {
         {/* Floor */}
         <rect x="0" y="0" width="500" height="400" fill="var(--surface-2)" />
         {Array.from({ length: 20 }).map((_, i) => (
-          <line key={`vx${i}`} x1={i * 25} y1={0} x2={i * 25} y2={400} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+          <line key={`vx${i}`} x1={i * 25} y1={0} x2={i * 25} y2={400} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
         ))}
         {Array.from({ length: 16 }).map((_, i) => (
-          <line key={`vy${i}`} x1={0} y1={i * 25} x2={500} y2={i * 25} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+          <line key={`vy${i}`} x1={0} y1={i * 25} x2={500} y2={i * 25} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
         ))}
         {/* Rooms */}
         <rect x="30" y="30" width="120" height="100" fill="oklch(0.94 0.025 250)" stroke="oklch(0.7 0.02 270)" />
@@ -964,10 +1030,10 @@ function VisualEditor() {
         </g>
         {/* Canvas grid */}
         {Array.from({ length: 18 }).map((_, i) => (
-          <line key={`cx${i}`} x1={56 + i * 25} y1={0} x2={56 + i * 25} y2={320} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+          <line key={`cx${i}`} x1={56 + i * 25} y1={0} x2={56 + i * 25} y2={320} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
         ))}
         {Array.from({ length: 12 }).map((_, i) => (
-          <line key={`cy${i}`} x1={56} y1={i * 25} x2={500} y2={i * 25} stroke="oklch(0.92 0.005 270)" strokeWidth="0.5" />
+          <line key={`cy${i}`} x1={56} y1={i * 25} x2={500} y2={i * 25} stroke="oklch(0.86 0.008 270)" strokeWidth="0.5" />
         ))}
         {/* Drawn rooms */}
         <rect x="90" y="40" width="140" height="100" fill="oklch(0.94 0.025 250)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
@@ -1017,7 +1083,7 @@ function TrustStrip() {
         { Icon: Globe, label: "Ready for global use" },
       ];
   return (
-    <section className="w-full">
+    <div className="w-full">
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-6 text-sm sm:grid-cols-3 sm:gap-x-10 md:grid-cols-5 md:p-8">
         {items.map((it) => (
           <div key={it.label} className="flex items-center gap-2.5">
@@ -1031,7 +1097,7 @@ function TrustStrip() {
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -1044,7 +1110,7 @@ function Audience() {
     ? ["Πανεπιστήμια", "Νοσοκομεία", "Μουσεία", "Βιβλιοθήκες", "Γραφεία", "Δημοτικά κτίρια"]
     : ["Universities", "Hospitals", "Museums", "Libraries", "Offices", "Civic buildings"];
   return (
-    <section className="flex w-full flex-col items-center gap-5 text-center">
+    <div className="flex w-full flex-col items-center gap-3 text-center">
       <p className="text-overline">{isEl ? "Φτιαγμένο για" : "Built for"}</p>
       <div className="flex flex-wrap items-center justify-center gap-2">
         {tags.map((tag) => (
@@ -1056,7 +1122,7 @@ function Audience() {
           </span>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -1076,6 +1142,11 @@ function ClosingCta({ isAuthed }: { isAuthed: boolean }) {
           ? "Λογαριασμός σε δευτερόλεπτα. Πρώτος όροφος σε λίγα λεπτά."
           : "Account in seconds. First floor in minutes."}
       </p>
+
+      <div className="my-2 w-full max-w-2xl">
+        <Audience />
+      </div>
+
       <Link
         href={isAuthed ? "/dashboard" : "/signin"}
         className="group inline-flex items-center gap-2 rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-medium text-[color:var(--background)] hover:opacity-90"

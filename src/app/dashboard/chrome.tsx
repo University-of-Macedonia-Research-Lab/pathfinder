@@ -36,18 +36,31 @@ export function DashboardChrome({ user, children }: Props) {
   return (
     <div className="min-h-dvh bg-[var(--surface-1)]">
       <header className="sticky top-0 z-30 w-full border-b border-transparent backdrop-blur-md transition-[background-color,border-color] supports-[backdrop-filter]:bg-[color-mix(in_oklab,var(--background),transparent_30%)]">
-        <div className="flex h-16 w-full items-center justify-between gap-4 px-6 sm:px-10 lg:px-14">
-          <Link href="/dashboard" aria-label="Pathfinder dashboard" className="flex items-center">
+        <div className="flex h-16 w-full items-center justify-between gap-2 px-4 sm:gap-4 sm:px-10 lg:px-14">
+          <Link
+            href="/dashboard"
+            aria-label="Pathfinder dashboard"
+            className="flex shrink-0 items-center"
+          >
+            {/* Compact mark on phones, full wordmark on sm+. */}
+            <Image
+              src="/favicon.png"
+              alt="Pathfinder"
+              width={70}
+              height={70}
+              priority
+              className="h-7 w-7 sm:hidden"
+            />
             <Image
               src="/logo-light.svg"
               alt="Pathfinder"
               width={408}
               height={45}
               priority
-              className="h-6 w-auto dark:invert sm:h-7"
+              className="hidden h-7 w-auto dark:invert sm:block"
             />
           </Link>
-          <nav className="flex items-center gap-1.5">
+          <nav className="flex items-center gap-0.5 sm:gap-1.5">
             <ThemeToggle />
             <LanguageToggle />
             <span className="ml-1.5">

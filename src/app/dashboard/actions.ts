@@ -230,12 +230,30 @@ export async function updateBuilding(formData: FormData) {
     publicSlug = parsed.publicSlug;
   }
 
+  // Re-derive the internal slug from the English name so a renamed building
+  // (or one that fell back to "untitled" because of a Greek-only name) keeps
+  // a sensible slug. Internal slug is display-only + unique; dashboard routes
+  // use the building id, so changing it is safe.
+  let slug = existing.slug;
+  const derived = slugify(parsed.nameEn);
+  if (derived !== existing.slug) {
+    slug = derived;
+    while (
+      await prisma.building.findFirst({
+        where: { slug, NOT: { id: existing.id } },
+      })
+    ) {
+      slug = `${derived}-${randomSlug(4)}`;
+    }
+  }
+
   await prisma.building.update({
     where: { id: existing.id },
     data: {
       nameEn: parsed.nameEn,
       nameEl: parsed.nameEl,
       description: parsed.description,
+      slug,
       publicSlug,
     },
   });
