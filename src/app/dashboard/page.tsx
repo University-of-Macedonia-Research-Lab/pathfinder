@@ -50,7 +50,7 @@ export default async function DashboardPage() {
                 id={b.id}
                 nameEn={b.nameEn}
                 nameEl={b.nameEl}
-                slug={b.slug}
+                publicSlug={b.publicSlug}
                 status={b.status}
                 floors={b._count.floors}
                 updatedAt={b.updatedAt}
@@ -90,7 +90,7 @@ function Greeting({
           </h1>
           <p className="text-lead max-w-xl">
             {isEmpty
-              ? "Create your first building, draw a floor, publish it at a URL — a complete pass takes about an afternoon."
+              ? "Create your first building, draw a floor, publish it at a URL. A complete pass takes about an afternoon."
               : "Pick a building to edit, or add a new one. Everything you save is live the moment you publish."}
           </p>
         </div>
@@ -190,7 +190,7 @@ function BuildingCard({
   id,
   nameEn,
   nameEl,
-  slug,
+  publicSlug,
   status,
   floors,
   updatedAt,
@@ -198,7 +198,7 @@ function BuildingCard({
   id: string;
   nameEn: string;
   nameEl: string;
-  slug: string;
+  publicSlug: string | null;
   status: string;
   floors: number;
   updatedAt: Date;
@@ -225,12 +225,14 @@ function BuildingCard({
         <p className="truncate text-sm text-[color:var(--muted-foreground)]">
           {nameEl}
         </p>
-        <div className="mt-4 flex items-center justify-between text-xs text-[color:var(--muted-foreground)]">
-          <span className="inline-flex items-center gap-1.5">
+        <div className="mt-4 flex items-center justify-between gap-2 text-xs text-[color:var(--muted-foreground)]">
+          <span className="inline-flex shrink-0 items-center gap-1.5">
             <Layers className="h-3.5 w-3.5" />
             {floors} floor{floors === 1 ? "" : "s"}
           </span>
-          <span className="truncate font-mono">/{slug}</span>
+          {isPublished && publicSlug && (
+            <span className="truncate font-mono">/p/{publicSlug}</span>
+          )}
         </div>
         <div className="mt-4 flex items-center justify-between text-xs">
           <span className="text-[color:var(--muted-foreground)]">

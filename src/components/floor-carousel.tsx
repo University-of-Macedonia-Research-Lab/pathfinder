@@ -54,7 +54,7 @@ export function FloorCarousel({
         {isEmpty ? (
           <div className="flex h-full flex-col items-center justify-center gap-1.5 text-[color:var(--muted-foreground)]">
             <Layers className="h-6 w-6" />
-            <span className="text-caption">Empty floor — nothing drawn yet</span>
+            <span className="text-caption">Empty floor, nothing drawn yet</span>
           </div>
         ) : (
           <FloorMapView map={current.map} showGraph />

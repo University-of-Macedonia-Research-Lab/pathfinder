@@ -9,6 +9,20 @@ import { randomSlug, slugify } from "@/lib/utils";
 import { emptyFloor } from "@/lib/map/empty-floor";
 import { parseFloorMap } from "@/lib/map/schema";
 
+/**
+ * Revalidate every surface that renders a building's data: the dashboard
+ * list and the building detail page, plus — when the building is published
+ * — the public viewer and its nested floor pages (the "layout" scope clears
+ * the whole `/p/{slug}` subtree). Call this after any building/floor write.
+ */
+function revalidateBuilding(buildingId: string, publicSlug?: string | null) {
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/buildings/${buildingId}`);
+  if (publicSlug) {
+    revalidatePath(`/p/${publicSlug}`, "layout");
+  }
+}
+
 const CreateBuilding = z.object({
   nameEn: z.string().min(1).max(120),
   nameEl: z.string().min(1).max(120),
@@ -90,7 +104,7 @@ export async function createFloor(formData: FormData) {
       data: JSON.stringify(floorMap),
     },
   });
-  revalidatePath(`/dashboard/buildings/${building.id}`);
+  revalidateBuilding(building.id, building.publicSlug);
   redirect(`/dashboard/buildings/${building.id}/floors/${f.id}/edit`);
 }
 
@@ -98,6 +112,7 @@ export async function saveFloorData(floorId: string, data: unknown) {
   const user = await requireUser();
   const floor = await prisma.floor.findFirst({
     where: { id: floorId, building: { ownerId: user.id } },
+    include: { building: { select: { publicSlug: true } } },
   });
   if (!floor) throw new Error("Floor not found");
   // Validate
@@ -106,6 +121,9 @@ export async function saveFloorData(floorId: string, data: unknown) {
     where: { id: floorId },
     data: { data: JSON.stringify(parsed) },
   });
+  // Saving geometry changes the floor stats on the building page and the
+  // rendered map on the public viewer, so revalidate the whole building.
+  revalidateBuilding(floor.buildingId, floor.building.publicSlug);
   revalidatePath(`/dashboard/buildings/${floor.buildingId}/floors/${floorId}/edit`);
   return { ok: true };
 }
@@ -136,6 +154,7 @@ export async function updateFloor(formData: FormData) {
 
   const existing = await prisma.floor.findFirst({
     where: { id: parsed.id, building: { ownerId: user.id } },
+    include: { building: { select: { publicSlug: true } } },
   });
   if (!existing) throw new Error("Floor not found");
 
@@ -166,7 +185,7 @@ export async function updateFloor(formData: FormData) {
     },
   });
 
-  revalidatePath(`/dashboard/buildings/${existing.buildingId}`);
+  revalidateBuilding(existing.buildingId, existing.building.publicSlug);
   revalidatePath(`/dashboard/buildings/${existing.buildingId}/floors/${existing.id}/edit`);
 }
 
@@ -174,11 +193,15 @@ export async function deleteFloor(floorId: string) {
   const user = await requireUser();
   const floor = await prisma.floor.findFirst({
     where: { id: floorId, building: { ownerId: user.id } },
-    select: { id: true, buildingId: true },
+    select: {
+      id: true,
+      buildingId: true,
+      building: { select: { publicSlug: true } },
+    },
   });
   if (!floor) throw new Error("Floor not found");
   await prisma.floor.delete({ where: { id: floor.id } });
-  revalidatePath(`/dashboard/buildings/${floor.buildingId}`);
+  revalidateBuilding(floor.buildingId, floor.building.publicSlug);
 }
 
 const UpdateBuilding = z.object({
@@ -258,9 +281,12 @@ export async function updateBuilding(formData: FormData) {
     },
   });
 
-  revalidatePath(`/dashboard/buildings/${existing.id}`);
-  revalidatePath("/dashboard");
-  if (publicSlug) revalidatePath(`/p/${publicSlug}`);
+  revalidateBuilding(existing.id, publicSlug);
+  // If the public slug itself changed, refresh the old URL too so a stale
+  // render at the previous slug doesn't linger after the rename.
+  if (existing.publicSlug && existing.publicSlug !== publicSlug) {
+    revalidatePath(`/p/${existing.publicSlug}`, "layout");
+  }
 }
 
 export async function publishBuilding(buildingId: string) {
@@ -282,7 +308,7 @@ export async function publishBuilding(buildingId: string) {
     where: { id: buildingId },
     data: { status: "published", publishedAt: new Date(), publicSlug },
   });
-  revalidatePath(`/dashboard/buildings/${buildingId}`);
+  revalidateBuilding(buildingId, publicSlug);
 }
 
 export async function unpublishBuilding(buildingId: string) {
@@ -295,7 +321,8 @@ export async function unpublishBuilding(buildingId: string) {
     where: { id: buildingId },
     data: { status: "draft" },
   });
-  revalidatePath(`/dashboard/buildings/${buildingId}`);
+  // Pass the slug so the now-unpublished public page is cleared too.
+  revalidateBuilding(buildingId, b.publicSlug);
 }
 
 export async function deleteBuilding(buildingId: string) {
@@ -306,5 +333,6 @@ export async function deleteBuilding(buildingId: string) {
   if (!b) throw new Error("Building not found");
   await prisma.building.delete({ where: { id: buildingId } });
   revalidatePath("/dashboard");
+  if (b.publicSlug) revalidatePath(`/p/${b.publicSlug}`, "layout");
   redirect("/dashboard");
 }

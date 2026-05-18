@@ -76,6 +76,16 @@
   --door-mark: oklch(1 0 0);
 
   --shadow-card: 0 1px 0 oklch(0 0 0 / 4%), 0 6px 24px -8px oklch(0 0 0 / 8%);
+
+  /* Homepage hero glow — near-white tints on the light background. */
+  --glow-wash: oklch(0.95 0.04 285);
+  --glow-1: oklch(0.93 0.05 285);
+  --glow-2: oklch(0.94 0.045 215);
+  --glow-3: oklch(0.93 0.05 330);
+  --glow-4: oklch(0.94 0.045 255);
+  --glow-haze: oklch(0.97 0.025 285 / 0.85);
+  --glow-blob-a: oklch(0.94 0.05 285 / 0.6);
+  --glow-blob-b: oklch(0.95 0.045 215 / 0.6);
 }
 
 .dark {
@@ -117,6 +127,21 @@
   --door-mark: oklch(0.3 0.02 270);
 
   --shadow-card: 0 1px 0 oklch(1 0 0 / 4%), 0 6px 24px -8px oklch(0 0 0 / 50%);
+
+  /* Homepage hero glow — a barely-there purple haze. Lightness sits only
+     ~0.05 above the dark background (oklch 0.16) and every stop stays in
+     the violet hue band, so the glow blends in instead of standing out.
+     The bright centre haze is disabled in dark mode (transparent): stacked
+     under the ring it read as a whitish bloom. Only the structured purple
+     ring, its wash, and the faint flank blobs remain. */
+  --glow-wash: oklch(0.20 0.03 286);
+  --glow-1: oklch(0.22 0.045 286);
+  --glow-2: oklch(0.21 0.038 278);
+  --glow-3: oklch(0.23 0.048 292);
+  --glow-4: oklch(0.21 0.04 274);
+  --glow-haze: transparent;
+  --glow-blob-a: oklch(0.23 0.046 286 / 0.45);
+  --glow-blob-b: oklch(0.22 0.038 274 / 0.45);
 }
 
 @layer base {

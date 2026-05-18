@@ -149,10 +149,7 @@ function Hero({
                 {isPublished ? "published" : "draft"}
               </Badge>
             </div>
-            <p className="text-caption">
-              {building.nameEl} ·{" "}
-              <span className="font-mono">/{building.slug}</span>
-            </p>
+            <p className="text-caption">{building.nameEl}</p>
             {building.description && (
               <p className="text-body mt-1 max-w-prose text-[color:var(--muted-foreground)]">
                 {building.description}

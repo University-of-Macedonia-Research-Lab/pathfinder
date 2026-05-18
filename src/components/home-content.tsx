@@ -80,7 +80,7 @@ function SectionShell({
   );
 }
 
-/* ─── Backdrop ───────────────────────────────────────────────────────────── */
+/* Backdrop */
 //
 // Full-bleed ambient background: a heavily-blurred neon ring (conic gradient
 // masked into a band), a bright core haze, and two drifting blobs — all
@@ -102,7 +102,7 @@ function Backdrop() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 100% 58% at 50% 2%, var(--brand-soft) 0%, transparent 72%)",
+              "radial-gradient(ellipse 100% 58% at 50% 2%, var(--glow-wash) 0%, transparent 72%)",
           }}
         />
         {/* The neon ring — conic gradient masked into a wide band, then
@@ -113,7 +113,7 @@ function Backdrop() {
             className="pathfinder-spin aspect-square w-[90rem] max-w-[210vw] rounded-full opacity-80"
             style={{
               background:
-                "conic-gradient(from 120deg, oklch(0.93 0.05 285), oklch(0.94 0.045 215), oklch(0.93 0.05 330), oklch(0.94 0.045 255), oklch(0.93 0.05 285))",
+                "conic-gradient(from 120deg, var(--glow-1), var(--glow-2), var(--glow-3), var(--glow-4), var(--glow-1))",
               maskImage:
                 "radial-gradient(closest-side, transparent 42%, #000 62%, #000 80%, transparent 100%)",
               WebkitMaskImage:
@@ -127,7 +127,7 @@ function Backdrop() {
           className="absolute left-1/2 top-[26vh] h-[32rem] w-[60rem] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60"
           style={{
             background:
-              "radial-gradient(ellipse at center, oklch(0.97 0.025 285 / 0.85), transparent 72%)",
+              "radial-gradient(ellipse at center, var(--glow-haze), transparent 72%)",
             filter: "blur(120px)",
           }}
         />
@@ -138,7 +138,7 @@ function Backdrop() {
             left: "-10rem",
             top: "2vh",
             background:
-              "radial-gradient(circle at center, oklch(0.94 0.05 285 / 0.6), transparent 66%)",
+              "radial-gradient(circle at center, var(--glow-blob-a), transparent 66%)",
             filter: "blur(90px)",
           }}
         />
@@ -148,7 +148,7 @@ function Backdrop() {
             right: "-8rem",
             top: "14vh",
             background:
-              "radial-gradient(circle at center, oklch(0.95 0.045 215 / 0.6), transparent 66%)",
+              "radial-gradient(circle at center, var(--glow-blob-b), transparent 66%)",
             filter: "blur(90px)",
           }}
         />
@@ -201,7 +201,7 @@ function Backdrop() {
   );
 }
 
-/* ─── Header ─────────────────────────────────────────────────────────────── */
+/* Header */
 
 function Header({ isAuthed }: { isAuthed: boolean }) {
   return (
@@ -253,7 +253,7 @@ function Header({ isAuthed }: { isAuthed: boolean }) {
   );
 }
 
-/* ─── Hero ───────────────────────────────────────────────────────────────── */
+/* Hero */
 
 function Hero({ isAuthed }: { isAuthed: boolean }) {
   const { lang } = useLang();
@@ -303,7 +303,7 @@ function heroCopy(lang: Lang) {
   return {
     headline: "Indoor wayfinding, done.",
     sub: "Draw a floor plan, route around stairs, publish at a URL. For campuses and organisations that welcome the public.",
-    ctaStart: "Get started — free",
+    ctaStart: "Get started for free",
     ctaDashboard: "Open dashboard",
     ctaTour: "See how",
   };
@@ -464,7 +464,7 @@ function AnimatedPathDemo() {
   );
 }
 
-/* ─── How it works ───────────────────────────────────────────────────────── */
+/* How it works */
 
 function HowItWorks() {
   const { lang } = useLang();
@@ -615,14 +615,6 @@ function ArtTrace() {
       <rect x="30" y="30" width="120" height="60" fill="oklch(0.94 0.025 250)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
       <rect x="170" y="30" width="100" height="60" fill="oklch(0.94 0.04 80)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
       <rect x="30" y="100" width="240" height="50" fill="oklch(0.96 0.005 95)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
-      {/* Pen tip */}
-      <g transform="translate(245, 86)">
-        <path
-          d="M 0 0 L -16 -16 L -22 -10 L -6 6 Z"
-          fill="var(--brand)"
-        />
-        <circle cx="0" cy="0" r="3" fill="var(--brand)" />
-      </g>
     </svg>
   );
 }
@@ -631,11 +623,9 @@ function ArtPublish() {
   return (
     <svg viewBox="0 0 300 180" className="h-full w-full" preserveAspectRatio="xMidYMid meet">
       {/* URL bar */}
-      <rect x="35" y="40" width="230" height="34" rx="17" fill="white" stroke="oklch(0.85 0.01 270)" strokeWidth="1.5" />
-      <circle cx="58" cy="57" r="4" fill="oklch(0.65 0.13 150)" />
-      <text x="74" y="62" fontSize="13" fill="oklch(0.45 0.02 270)" fontFamily="monospace">
-        pathfinder.app/p/main-library
-      </text>
+      <rect x="28" y="40" width="244" height="34" rx="17" fill="white" stroke="oklch(0.85 0.01 270)" strokeWidth="1.5" />
+      <circle cx="50" cy="57" r="4" fill="oklch(0.65 0.13 150)" />
+      <text x="64" y="61" fontSize="11" fill="oklch(0.45 0.02 270)" fontFamily="monospace">pathfinder.app/p/library</text>
       {/* QR code */}
       <g transform="translate(130, 90)">
         <rect x="0" y="0" width="60" height="60" fill="white" stroke="oklch(0.85 0.01 270)" strokeWidth="1.5" rx="4" />
@@ -655,7 +645,7 @@ function ArtPublish() {
   );
 }
 
-/* ─── Section eyebrow (shared) ───────────────────────────────────────────── */
+/* Section eyebrow (shared) */
 
 function SectionEyebrow({
   eyebrow,
@@ -680,7 +670,7 @@ function SectionEyebrow({
   );
 }
 
-/* ─── Showcase: deep feature blocks ──────────────────────────────────────── */
+/* Showcase: deep feature blocks */
 
 function Showcase() {
   const { lang } = useLang();
@@ -838,7 +828,7 @@ function ShowcaseBlock({
   );
 }
 
-/* ─── Showcase visuals ───────────────────────────────────────────────────── */
+/* Showcase visuals */
 
 function VisualRouting() {
   return (
@@ -929,60 +919,68 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 }
 
 function VisualMultiFloor() {
+  // Flat stacked floors — even 40px margin on every side of the viewBox.
+  // Each floor: an outer plate + three rooms, the rightmost being the
+  // elevator. A dashed shaft links the two elevators across floors.
+  const rooms1 = [
+    { x: 98, w: 92, fill: "oklch(0.94 0.025 295)", text: "WC" },
+    { x: 198, w: 130, fill: "oklch(0.94 0.025 250)", text: "205" },
+    { x: 336, w: 92, fill: "oklch(0.93 0.06 215)", text: "Elev." },
+  ];
+  const rooms0 = [
+    { x: 98, w: 92, fill: "oklch(0.94 0.04 80)", text: "Lobby" },
+    { x: 198, w: 130, fill: "oklch(0.94 0.025 250)", text: "101" },
+    { x: 336, w: 92, fill: "oklch(0.93 0.06 215)", text: "Elev." },
+  ];
   return (
     <div className="relative aspect-[5/4] w-full bg-[var(--surface-2)]">
       <svg
-        viewBox="0 0 500 400"
+        viewBox="0 0 480 384"
         className="absolute inset-0 h-full w-full"
         preserveAspectRatio="xMidYMid meet"
       >
-        {/* Floor 1 (top, in perspective) */}
-        <g transform="translate(40, 30) skewX(-20)">
-          <rect x="0" y="0" width="400" height="120" fill="oklch(0.985 0.008 95)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
-          <rect x="20" y="20" width="80" height="80" fill="oklch(0.94 0.025 295)" stroke="oklch(0.7 0.02 270)" />
-          <rect x="120" y="20" width="120" height="80" fill="oklch(0.94 0.025 250)" stroke="oklch(0.7 0.02 270)" />
-          <rect x="260" y="20" width="120" height="80" fill="oklch(0.93 0.04 330)" stroke="oklch(0.7 0.02 270)" />
-          <text x="60" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>WC</text>
-          <text x="180" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>205</text>
-          <text x="320" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>Lab</text>
-        </g>
-        <text x="450" y="60" fontSize="10" fontFamily="monospace" fill="var(--brand)" fontWeight={700}>
-          L1
-        </text>
-        {/* Floor 0 (bottom, in perspective) */}
-        <g transform="translate(40, 240) skewX(-20)">
-          <rect x="0" y="0" width="400" height="120" fill="oklch(0.985 0.008 95)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
-          <rect x="20" y="20" width="80" height="80" fill="oklch(0.94 0.04 80)" stroke="oklch(0.7 0.02 270)" />
-          <rect x="120" y="20" width="120" height="80" fill="oklch(0.94 0.025 250)" stroke="oklch(0.7 0.02 270)" />
-          <rect x="260" y="20" width="120" height="80" fill="oklch(0.93 0.06 65)" stroke="oklch(0.7 0.02 270)" />
-          <text x="60" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>Lobby</text>
-          <text x="180" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>101</text>
-          <text x="320" y="60" textAnchor="middle" fontSize="11" fill="oklch(0.3 0.02 270)" fontWeight={500}>Elev.</text>
-        </g>
-        <text x="450" y="280" fontSize="10" fontFamily="monospace" fill="var(--brand)" fontWeight={700}>
-          L0
-        </text>
-        {/* Elevator shaft connecting them */}
+        {/* Floor 1 (top) */}
+        <rect x="86" y="48" width="354" height="128" fill="oklch(0.985 0.008 95)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
+        {rooms1.map((r) => (
+          <g key={`f1-${r.text}`}>
+            <rect x={r.x} y="60" width={r.w} height="104" fill={r.fill} stroke="oklch(0.7 0.02 270)" />
+            <text x={r.x + r.w / 2} y="116" textAnchor="middle" fontSize="12" fill="oklch(0.3 0.02 270)" fontWeight={500}>
+              {r.text}
+            </text>
+          </g>
+        ))}
+        {/* Floor 0 (bottom) */}
+        <rect x="86" y="208" width="354" height="128" fill="oklch(0.985 0.008 95)" stroke="oklch(0.22 0.02 270)" strokeWidth="2" />
+        {rooms0.map((r) => (
+          <g key={`f0-${r.text}`}>
+            <rect x={r.x} y="220" width={r.w} height="104" fill={r.fill} stroke="oklch(0.7 0.02 270)" />
+            <text x={r.x + r.w / 2} y="276" textAnchor="middle" fontSize="12" fill="oklch(0.3 0.02 270)" fontWeight={500}>
+              {r.text}
+            </text>
+          </g>
+        ))}
+
+        {/* Level badges in the left column */}
         <g>
-          <line x1="305" y1="240" x2="305" y2="150" stroke="oklch(0.62 0.13 215)" strokeWidth="3" strokeDasharray="4 4" />
-          <circle cx="305" cy="150" r="8" fill="white" stroke="oklch(0.62 0.13 215)" strokeWidth="2.5" />
-          <circle cx="305" cy="240" r="8" fill="white" stroke="oklch(0.62 0.13 215)" strokeWidth="2.5" />
-          {/* Up/down arrow */}
+          <rect x="40" y="101" width="34" height="22" rx="5" fill="var(--brand)" />
+          <text x="57" y="116" textAnchor="middle" fontSize="12" fontFamily="monospace" fontWeight={700} fill="white">L1</text>
+          <rect x="40" y="261" width="34" height="22" rx="5" fill="var(--brand)" />
+          <text x="57" y="276" textAnchor="middle" fontSize="12" fontFamily="monospace" fontWeight={700} fill="white">L0</text>
+        </g>
+
+        {/* Elevator shaft linking the two elevator rooms */}
+        <g>
+          <line x1="382" y1="164" x2="382" y2="220" stroke="oklch(0.55 0.13 215)" strokeWidth="3" strokeDasharray="5 4" />
+          <circle cx="382" cy="164" r="7" fill="white" stroke="oklch(0.55 0.13 215)" strokeWidth="2.5" />
+          <circle cx="382" cy="220" r="7" fill="white" stroke="oklch(0.55 0.13 215)" strokeWidth="2.5" />
           <path
-            d="M 305 195 L 305 175 M 300 180 L 305 175 L 310 180"
-            stroke="oklch(0.62 0.13 215)"
+            d="M 382 200 L 382 184 M 377 189 L 382 184 L 387 189"
+            stroke="oklch(0.55 0.13 215)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
             fill="none"
           />
-        </g>
-        {/* Cross-floor badge */}
-        <g transform="translate(322, 145)">
-          <rect x="0" y="-8" width="38" height="16" rx="4" fill="oklch(0.62 0.13 215)" />
-          <text x="19" y="3" textAnchor="middle" fontSize="9" fill="white" fontWeight={700} fontFamily="var(--font-sans)">
-            ↕ L1
-          </text>
         </g>
       </svg>
     </div>
@@ -1062,7 +1060,7 @@ function VisualEditor() {
   );
 }
 
-/* ─── Trust strip ────────────────────────────────────────────────────────── */
+/* Trust strip */
 
 function TrustStrip() {
   const { lang } = useLang();
@@ -1101,7 +1099,7 @@ function TrustStrip() {
   );
 }
 
-/* ─── Audience ───────────────────────────────────────────────────────────── */
+/* Audience */
 
 function Audience() {
   const { lang } = useLang();
@@ -1126,7 +1124,7 @@ function Audience() {
   );
 }
 
-/* ─── Closing CTA ────────────────────────────────────────────────────────── */
+/* Closing CTA */
 
 function ClosingCta({ isAuthed }: { isAuthed: boolean }) {
   const { lang } = useLang();
@@ -1160,7 +1158,7 @@ function ClosingCta({ isAuthed }: { isAuthed: boolean }) {
   );
 }
 
-/* ─── Footer ─────────────────────────────────────────────────────────────── */
+/* Footer */
 
 function Footer() {
   const { lang } = useLang();
