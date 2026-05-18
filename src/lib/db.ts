@@ -1,4 +1,4 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
@@ -6,9 +6,13 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function makeClient() {
-  const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
-  const filePath = url.startsWith("file:") ? url.slice("file:".length) : url;
-  const adapter = new PrismaBetterSqlite3({ url: filePath });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not set");
+  }
+  // Neon's serverless driver talks over HTTP/WebSocket, so it works inside
+  // Vercel functions where a file-based SQLite database cannot.
+  const adapter = new PrismaNeon({ connectionString });
   return new PrismaClient({ adapter });
 }
 
