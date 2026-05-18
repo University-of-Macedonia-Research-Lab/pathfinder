@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { loadBuildingFloorMaps } from "@/lib/map/load-floor";
-import { FloorScreen } from "@/components/map/floor-screen";
+import { PublicFloorView } from "@/components/map/public-floor-view";
 
 export default async function PublicFloorPage(
   props: { params: Promise<{ publicSlug: string; floorSlug: string }> },
@@ -18,11 +18,10 @@ export default async function PublicFloorPage(
   const floors = await loadBuildingFloorMaps(building.id);
 
   return (
-    <FloorScreen
-      buildingSlug={building.slug}
+    <PublicFloorView
       publicSlug={publicSlug}
-      floors={floors}
       currentFloorSlug={floorSlug}
+      initial={{ buildingSlug: building.slug, floors }}
     />
   );
 }
