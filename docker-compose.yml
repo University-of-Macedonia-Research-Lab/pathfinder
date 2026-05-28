@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  nextjs-app:
+    build: .
+    restart: always
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DO_SPACES_REGION=${DO_SPACES_REGION}
+      - DO_SPACES_ENDPOINT=${DO_SPACES_ENDPOINT}
+      - DO_SPACES_BUCKET=${DO_SPACES_BUCKET}
+      - DO_SPACES_KEY=${DO_SPACES_KEY}
+      - DO_SPACES_SECRET=${DO_SPACES_SECRET}
+      - NEXT_PUBLIC_DO_SPACES_BUCKET=${NEXT_PUBLIC_DO_SPACES_BUCKET}
+      - NEXT_PUBLIC_DO_SPACES_ENDPOINT=${NEXT_PUBLIC_DO_SPACES_ENDPOINT}
+      - NEXT_PUBLIC_DO_SPACES_FOLDER=${NEXT_PUBLIC_DO_SPACES_FOLDER}
+    networks:
+      - shared_network
+networks:
+  shared_network:
+    external: true
